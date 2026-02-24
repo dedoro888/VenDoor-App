@@ -7,11 +7,26 @@ interface SearchOverlayProps {
   onClose: () => void;
 }
 
+const nigerianFoodSuggestions = [
+  "Jollof Rice", "Fried Rice", "Beans", "Pounded Yam", "Egusi Soup",
+  "Pepper Soup", "Suya", "Shawarma", "Puff Puff", "Chin Chin",
+  "Amala", "Efo Riro", "Ofada Rice", "Moi Moi", "Akara",
+  "Banga Soup", "Ogbono Soup", "Cake", "Meat Pie", "Dodo",
+  "Plantain", "Yam Porridge", "Nkwobi", "Asun", "Kilishi",
+  "Zobo", "Chapman", "Chicken Wrap", "Grilled Fish", "Catfish",
+];
+
 const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
   const [query, setQuery] = useState("");
   const [searchType, setSearchType] = useState<"food" | "shop">("food");
 
   if (!isOpen) return null;
+
+  const matchingSuggestions = query.length > 0 && searchType === "food"
+    ? nigerianFoodSuggestions.filter((s) =>
+        s.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 6)
+    : [];
 
   const filteredFood = query.length > 0
     ? foodItems.filter((f) => f.name.toLowerCase().includes(query.toLowerCase()))
@@ -22,6 +37,10 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
     : [];
 
   const results = searchType === "food" ? filteredFood : filteredShops;
+
+  const handleSuggestionTap = (suggestion: string) => {
+    setQuery(suggestion);
+  };
 
   return (
     <div className="fixed inset-0 bg-background z-50 animate-slide-up">
@@ -63,15 +82,51 @@ const SearchOverlay = ({ isOpen, onClose }: SearchOverlayProps) => {
           </button>
         </div>
 
+        {/* Suggestions */}
+        {searchType === "food" && matchingSuggestions.length > 0 && filteredFood.length === 0 && (
+          <div className="px-5 mb-4">
+            <p className="text-xs text-muted-foreground mb-2">Suggestions</p>
+            <div className="flex flex-wrap gap-2">
+              {matchingSuggestions.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleSuggestionTap(s)}
+                  className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground hover:bg-primary/10 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results */}
-        <div className="px-5 space-y-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 140px)" }}>
+        <div className="px-5 space-y-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 180px)" }}>
           {query.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center mt-10">
-              Start typing to search for {searchType === "food" ? "food items" : "shops"}...
-            </p>
+            <div className="text-center mt-10">
+              <p className="text-sm text-muted-foreground">
+                Start typing to search for {searchType === "food" ? "food items" : "shops"}...
+              </p>
+              {searchType === "food" && (
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground mb-2">Try searching for</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {["Jollof Rice", "Shawarma", "Suya", "Beans", "Puff Puff", "Cake"].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => handleSuggestionTap(s)}
+                        className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground hover:bg-primary/10 transition-colors"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
-          {query.length > 0 && results.length === 0 && (
+          {query.length > 0 && results.length === 0 && matchingSuggestions.length === 0 && (
             <p className="text-sm text-muted-foreground text-center mt-10">
               No results found for "{query}"
             </p>

@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
 import CartPage from "./pages/CartPage";
+import DiscoverPage from "./pages/DiscoverPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

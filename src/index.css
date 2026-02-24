@@ -107,4 +107,12 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  @keyframes scale-in {
+    0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
+    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  }
+  .animate-scale-in {
+    animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
 }

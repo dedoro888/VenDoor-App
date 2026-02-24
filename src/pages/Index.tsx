@@ -38,7 +38,7 @@ const Index = () => {
       <MealSection title="Save up on local brands" onFoodTap={setSelectedFood} />
 
       {/* Bottom spacing for nav */}
-      <div className="h-24" />
+      <div className="h-28" />
 
       <BottomNav active="home" onSearch={() => setSearchOpen(true)} />
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
