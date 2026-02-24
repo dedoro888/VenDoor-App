@@ -1,24 +1,18 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { FoodItem } from "@/data/mockData";
 import AppHeader from "@/components/AppHeader";
 import CategoryFilter from "@/components/CategoryFilter";
 import TopPlaces from "@/components/TopPlaces";
 import MealSection from "@/components/MealSection";
 import BottomNav from "@/components/BottomNav";
 import SearchOverlay from "@/components/SearchOverlay";
+import FoodItemModal from "@/components/FoodItemModal";
 
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState("all");
-  const [activeTab, setActiveTab] = useState("home");
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const handleNavigate = (tab: string) => {
-    if (tab === "search") {
-      setSearchOpen(true);
-    } else {
-      setActiveTab(tab);
-    }
-  };
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
@@ -39,15 +33,16 @@ const Index = () => {
 
       <TopPlaces />
 
-      <MealSection title="Meals under 5k" filterFn={(s) => s.deliveryFee <= 1000} />
+      <MealSection title="Meals under 5k" filterFn={(s) => s.deliveryFee <= 1000} onFoodTap={setSelectedFood} />
 
-      <MealSection title="Save up on local brands" />
+      <MealSection title="Save up on local brands" onFoodTap={setSelectedFood} />
 
       {/* Bottom spacing for nav */}
       <div className="h-24" />
 
-      <BottomNav active={activeTab} onNavigate={handleNavigate} />
+      <BottomNav active="home" onSearch={() => setSearchOpen(true)} />
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <FoodItemModal food={selectedFood} onClose={() => setSelectedFood(null)} />
     </div>
   );
 };
