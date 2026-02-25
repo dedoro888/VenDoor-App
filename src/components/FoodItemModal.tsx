@@ -1,14 +1,9 @@
 import { useState } from "react";
-import { X, MapPin, Minus, Plus, Clock, Sparkles } from "lucide-react";
+import { X, MapPin, Minus, Plus, Clock, Sparkles, Calendar } from "lucide-react";
 import { FoodItem } from "@/data/mockData";
 import { useCart } from "@/contexts/CartContext";
 import { useFavourites } from "@/contexts/FavouritesContext";
 import { toast } from "@/hooks/use-toast";
-
-interface FoodItemModalProps {
-  food: FoodItem | null;
-  onClose: () => void;
-}
 
 const FourPointStar = ({ filled, className }: { filled: boolean; className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
@@ -16,9 +11,18 @@ const FourPointStar = ({ filled, className }: { filled: boolean; className?: str
   </svg>
 );
 
+interface FoodItemModalProps {
+  food: FoodItem | null;
+  onClose: () => void;
+}
+
 const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
   const [quantity, setQuantity] = useState(1);
   const [deliveryType, setDeliveryType] = useState<"pickup" | "delivery">("delivery");
+  const [note, setNote] = useState("");
+  const [scheduling, setScheduling] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
   const { addToCart } = useCart();
   const { isFoodFav, toggleFoodFav } = useFavourites();
 
@@ -35,10 +39,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
-
-      {/* Modal */}
       <div
         className="relative w-full max-w-sm bg-card rounded-3xl overflow-hidden shadow-2xl max-h-[85vh] flex flex-col animate-in zoom-in-95 fade-in duration-200"
         onClick={(e) => e.stopPropagation()}
@@ -77,7 +78,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
             </span>
           </div>
 
-          {/* Pickup / Delivery Toggle */}
+          {/* Pickup / Delivery */}
           <div className="flex gap-2">
             {(["pickup", "delivery"] as const).map((type) => (
               <button
@@ -92,11 +93,48 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
             ))}
           </div>
 
-          {/* Schedule / Pre-order */}
-          <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary text-sm font-medium text-foreground">
-            <Clock className="w-4 h-4" />
+          {/* Schedule Order */}
+          <button
+            onClick={() => setScheduling(!scheduling)}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              scheduling ? "bg-primary/15 text-primary" : "bg-secondary text-foreground"
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
             Schedule Order
           </button>
+
+          {scheduling && (
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-xl bg-secondary text-foreground text-sm border-none outline-none"
+                min={new Date().toISOString().split("T")[0]}
+              />
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-xl bg-secondary text-foreground text-sm border-none outline-none"
+              />
+            </div>
+          )}
+
+          {scheduleDate && scheduleTime && (
+            <div className="px-3 py-2 rounded-xl bg-vendoor-amber/10 text-xs text-vendoor-amber font-medium">
+              📅 Scheduled for {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString()}
+            </div>
+          )}
+
+          {/* Note */}
+          <textarea
+            placeholder="Special instructions (e.g., less pepper, no onions)..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-xl bg-secondary text-sm text-foreground placeholder:text-muted-foreground resize-none h-16 border-none outline-none"
+          />
 
           {/* Quantity */}
           <div className="flex items-center justify-between">
@@ -119,7 +157,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
           </div>
         </div>
 
-        {/* Add to Cart - Liquid Glass Button */}
+        {/* Add to Cart */}
         <div className="p-5 pt-0 flex-shrink-0">
           <button
             onClick={handleAddToCart}
@@ -130,14 +168,12 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
               backgroundSize: "200% 200%",
               color: "hsl(var(--primary-foreground))",
               boxShadow: "0 8px 32px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.3), inset 0 -1px 0 hsl(0 0% 0% / 0.1)",
-              backdropFilter: "blur(8px)",
             }}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
               <Sparkles className="w-4 h-4" />
               Add to Cart • ₦{totalPrice.toLocaleString()}
             </span>
-            {/* Glass overlay */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-2xl pointer-events-none" />
           </button>
         </div>

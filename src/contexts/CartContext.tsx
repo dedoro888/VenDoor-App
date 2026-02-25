@@ -12,8 +12,11 @@ export interface Order {
   items: CartItem[];
   total: number;
   date: string;
-  stage: 1 | 2 | 3; // 1=cooked/packed, 2=rider pickup, 3=received
+  stage: 1 | 2 | 3;
   vendorName: string;
+  note?: string;
+  scheduledFor?: string;
+  cancelled?: boolean;
 }
 
 interface CartContextType {
@@ -24,7 +27,8 @@ interface CartContextType {
   updateQuantity: (foodId: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
-  placeOrder: () => Order;
+  placeOrder: (note?: string, scheduledFor?: string) => Order;
+  cancelOrder: (orderId: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -50,10 +54,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateQuantity = (foodId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(foodId);
-      return;
-    }
+    if (quantity <= 0) { removeFromCart(foodId); return; }
     setItems((prev) => prev.map((i) => (i.food.id === foodId ? { ...i, quantity } : i)));
   };
 
@@ -61,7 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const cartTotal = items.reduce((sum, i) => sum + i.food.price * i.quantity, 0);
 
-  const placeOrder = (): Order => {
+  const placeOrder = (note?: string, scheduledFor?: string): Order => {
     const order: Order = {
       id: `ORD-${Date.now().toString(36).toUpperCase()}`,
       items: [...items],
@@ -69,14 +70,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       date: new Date().toISOString(),
       stage: 1,
       vendorName: items[0]?.food.shopName || "VenDoor",
+      note,
+      scheduledFor,
     };
     setOrders((prev) => [order, ...prev]);
     clearCart();
     return order;
   };
 
+  const cancelOrder = (orderId: string) => {
+    setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, cancelled: true } : o));
+  };
+
   return (
-    <CartContext.Provider value={{ items, orders, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, placeOrder }}>
+    <CartContext.Provider value={{ items, orders, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, placeOrder, cancelOrder }}>
       {children}
     </CartContext.Provider>
   );

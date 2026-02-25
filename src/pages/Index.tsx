@@ -8,11 +8,15 @@ import MealSection from "@/components/MealSection";
 import BottomNav from "@/components/BottomNav";
 import SearchOverlay from "@/components/SearchOverlay";
 import FoodItemModal from "@/components/FoodItemModal";
+import FilterBar, { Filters } from "@/components/FilterBar";
+
+const defaultFilters: Filters = { openNow: false, minDiscount: 0, priceRange: [0, 10000], minRating: 0 };
 
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+  const [filters, setFilters] = useState<Filters>(defaultFilters);
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
@@ -31,13 +35,14 @@ const Index = () => {
 
       <CategoryFilter active={activeCategory} onSelect={setActiveCategory} />
 
-      <TopPlaces />
+      <FilterBar filters={filters} onChange={setFilters} />
+
+      <TopPlaces filters={filters} />
 
       <MealSection title="Meals under 5k" filterFn={(s) => s.deliveryFee <= 1000} onFoodTap={setSelectedFood} />
 
       <MealSection title="Save up on local brands" onFoodTap={setSelectedFood} />
 
-      {/* Bottom spacing for nav */}
       <div className="h-28" />
 
       <BottomNav active="home" onSearch={() => setSearchOpen(true)} />
