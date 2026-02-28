@@ -1,11 +1,9 @@
 import { shops, Shop } from "@/data/mockData";
-import { Star, ArrowRight, Bike, Plus } from "lucide-react";
+import { Star, ArrowRight, Bike, MapPin, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFavourites } from "@/contexts/FavouritesContext";
-import { useCart } from "@/contexts/CartContext";
-import { foodItems } from "@/data/mockData";
-import { toast } from "@/hooks/use-toast";
 import { Filters } from "@/components/FilterBar";
+import { FoodItem } from "@/data/mockData";
 
 const FourPointStar = ({ filled, className }: { filled: boolean; className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
@@ -15,35 +13,27 @@ const FourPointStar = ({ filled, className }: { filled: boolean; className?: str
 
 interface TopPlacesProps {
   filters?: Filters;
+  onFoodTap?: (food: FoodItem) => void;
 }
 
 const TopPlaces = ({ filters }: TopPlacesProps) => {
   const navigate = useNavigate();
   const { isShopFav, toggleShopFav } = useFavourites();
-  const { addToCart } = useCart();
 
   let filtered = [...shops];
   if (filters) {
     if (filters.openNow) filtered = filtered.filter((s) => s.isOpen);
     if (filters.minRating > 0) filtered = filtered.filter((s) => s.rating >= filters.minRating);
     if (filters.minDiscount > 0) filtered = filtered.filter((s) => (s.discount || 0) >= filters.minDiscount);
+    if (filters.freeDelivery) filtered = filtered.filter((s) => s.deliveryFee === 0);
   }
-
-  const quickAdd = (shop: Shop, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const item = foodItems.find((f) => f.shopId === shop.id);
-    if (item) {
-      addToCart(item, 1, "delivery");
-      toast({ title: "Added!", description: `${item.name} from ${shop.name}` });
-    }
-  };
 
   return (
     <section className="mt-4">
       <div className="flex items-center justify-between px-5 mb-1">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Top 10 Places to eat</h2>
-          <p className="text-xs text-muted-foreground">Most ordered this week</p>
+          <h2 className="text-xl font-bold text-foreground">Top 10 Vendors</h2>
+          <p className="text-xs text-muted-foreground">Most orders this week</p>
         </div>
         <button className="p-2 rounded-full bg-secondary">
           <ArrowRight className="w-4 h-4 text-foreground" />
@@ -58,17 +48,31 @@ const TopPlaces = ({ filters }: TopPlacesProps) => {
           >
             <div className="relative rounded-xl overflow-hidden h-36 bg-secondary">
               <img src={shop.image} alt={shop.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent" />
+
+              {/* Rank */}
               <span
                 className="absolute bottom-2 left-2 text-3xl font-black text-primary-foreground drop-shadow-lg"
                 style={{ WebkitTextStroke: "1px hsl(var(--foreground) / 0.3)" }}
               >
                 {index + 1}
               </span>
+
+              {/* Closed overlay */}
               {!shop.isOpen && (
                 <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
                   <span className="text-xs font-bold text-primary-foreground bg-destructive px-2 py-1 rounded-full">Closed</span>
                 </div>
               )}
+
+              {/* Discount badge */}
+              {shop.discount && (
+                <div className="absolute top-2 left-2 flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  <Tag className="w-2.5 h-2.5" />
+                  {shop.discount}% Off
+                </div>
+              )}
+
               {/* Fav button */}
               <button
                 onClick={(e) => { e.stopPropagation(); toggleShopFav(shop.id); }}
@@ -78,22 +82,26 @@ const TopPlaces = ({ filters }: TopPlacesProps) => {
               >
                 <FourPointStar filled={isShopFav(shop.id)} className="w-4 h-4" />
               </button>
-              {/* Quick add */}
-              <button
-                onClick={(e) => quickAdd(shop, e)}
-                className="absolute bottom-2 right-2 p-1.5 rounded-full bg-primary text-primary-foreground shadow-lg"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
             </div>
+
             <div className="mt-2">
-              <h3 className="text-sm font-semibold text-foreground truncate">{shop.name}</h3>
+              {/* Name + open/closed */}
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-semibold text-foreground truncate flex-1">{shop.name}</h3>
+                <span className={`text-[10px] font-bold flex-shrink-0 ${shop.isOpen ? "text-vendoor-green" : "text-destructive"}`}>
+                  {shop.isOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+
+              {/* Delivery fee + time */}
               <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
                 <Bike className="w-3.5 h-3.5 text-primary" />
                 <span className="font-medium text-foreground">₦{shop.deliveryFee}</span>
                 <span>•</span>
                 <span>{shop.deliveryTime}</span>
               </div>
+
+              {/* Rating */}
               <div className="flex items-center gap-1 mt-0.5">
                 <Star className="w-3 h-3 fill-vendoor-amber text-vendoor-amber" />
                 <span className="text-xs font-medium text-foreground">{shop.rating}</span>

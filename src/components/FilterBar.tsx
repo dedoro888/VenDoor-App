@@ -1,115 +1,196 @@
 import { useState } from "react";
-import { MapPin, Clock, Percent, DollarSign, Star, X, SlidersHorizontal } from "lucide-react";
+import { Clock, Percent, DollarSign, Star, X, Bike, MapPin, Check } from "lucide-react";
 
 export interface Filters {
   openNow: boolean;
   minDiscount: number;
   priceRange: [number, number];
   minRating: number;
+  maxDistance: number;
+  maxDeliveryTime: number;
+  freeDelivery: boolean;
 }
 
 interface FilterBarProps {
   filters: Filters;
   onChange: (f: Filters) => void;
+  onClose: () => void;
+  defaultFilters: Filters;
 }
 
-const FilterBar = ({ filters, onChange }: FilterBarProps) => {
-  const [expanded, setExpanded] = useState<string | null>(null);
+const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProps) => {
+  const [draft, setDraft] = useState<Filters>({ ...filters });
 
-  const chips = [
-    { id: "open", label: "Open Now", icon: Clock, active: filters.openNow },
-    { id: "discount", label: filters.minDiscount > 0 ? `${filters.minDiscount}%+ Off` : "Discount", icon: Percent, active: filters.minDiscount > 0 },
-    { id: "price", label: filters.priceRange[1] < 10000 ? `Under ₦${(filters.priceRange[1] / 1000).toFixed(0)}k` : "Price", icon: DollarSign, active: filters.priceRange[1] < 10000 },
-    { id: "rating", label: filters.minRating > 0 ? `${filters.minRating}★+` : "Rating", icon: Star, active: filters.minRating > 0 },
-  ];
+  const handleApply = () => {
+    onChange(draft);
+    onClose();
+  };
 
-  const toggle = (id: string) => setExpanded(expanded === id ? null : id);
+  const handleReset = () => {
+    setDraft({ ...defaultFilters });
+    onChange(defaultFilters);
+    onClose();
+  };
 
   return (
-    <div className="px-5 mb-3">
-      <div className="flex gap-2 overflow-x-auto hide-scrollbar">
-        <button
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-secondary text-xs font-medium text-foreground"
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-        </button>
-        {chips.map((chip) => {
-          const Icon = chip.icon;
-          return (
+    <div
+      className="fixed inset-0 z-40 flex items-end"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-md mx-auto bg-card rounded-t-3xl p-5 pb-8 animate-slide-up shadow-2xl"
+        style={{ maxHeight: "80vh", overflowY: "auto" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-foreground">Filters</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full bg-secondary">
+            <X className="w-4 h-4 text-foreground" />
+          </button>
+        </div>
+
+        <div className="space-y-5">
+          {/* Toggles */}
+          <div className="flex gap-3">
             <button
-              key={chip.id}
-              onClick={() => {
-                if (chip.id === "open") {
-                  onChange({ ...filters, openNow: !filters.openNow });
-                } else {
-                  toggle(chip.id);
-                }
-              }}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-colors ${
-                chip.active ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+              onClick={() => setDraft({ ...draft, openNow: !draft.openNow })}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                draft.openNow ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
               }`}
             >
-              <Icon className="w-3.5 h-3.5" />
-              {chip.label}
+              <Clock className="w-4 h-4" /> Open Now
             </button>
-          );
-        })}
+            <button
+              onClick={() => setDraft({ ...draft, freeDelivery: !draft.freeDelivery })}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                draft.freeDelivery ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+              }`}
+            >
+              <Bike className="w-4 h-4" /> Free Delivery
+            </button>
+          </div>
+
+          {/* Price Range */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Max Price</span>
+              </div>
+              <span className="text-sm font-bold text-primary">₦{draft.priceRange[1].toLocaleString()}</span>
+            </div>
+            <input
+              type="range" min={1000} max={10000} step={500}
+              value={draft.priceRange[1]}
+              onChange={(e) => setDraft({ ...draft, priceRange: [0, Number(e.target.value)] })}
+              className="w-full accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>₦1,000</span><span>₦10,000</span>
+            </div>
+          </div>
+
+          {/* Distance */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Max Distance</span>
+              </div>
+              <span className="text-sm font-bold text-primary">{draft.maxDistance} km</span>
+            </div>
+            <input
+              type="range" min={1} max={30} step={1}
+              value={draft.maxDistance}
+              onChange={(e) => setDraft({ ...draft, maxDistance: Number(e.target.value) })}
+              className="w-full accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>1 km</span><span>30 km</span>
+            </div>
+          </div>
+
+          {/* Delivery Time */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Max Delivery Time</span>
+              </div>
+              <span className="text-sm font-bold text-primary">{draft.maxDeliveryTime} min</span>
+            </div>
+            <input
+              type="range" min={10} max={60} step={5}
+              value={draft.maxDeliveryTime}
+              onChange={(e) => setDraft({ ...draft, maxDeliveryTime: Number(e.target.value) })}
+              className="w-full accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>10 min</span><span>60 min</span>
+            </div>
+          </div>
+
+          {/* Discount */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Percent className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Min Discount</span>
+              </div>
+              <span className="text-sm font-bold text-primary">{draft.minDiscount}%</span>
+            </div>
+            <input
+              type="range" min={0} max={50} step={5}
+              value={draft.minDiscount}
+              onChange={(e) => setDraft({ ...draft, minDiscount: Number(e.target.value) })}
+              className="w-full accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>0%</span><span>50%</span>
+            </div>
+          </div>
+
+          {/* Rating */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Star className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Min Rating</span>
+            </div>
+            <div className="flex gap-2">
+              {[0, 3, 3.5, 4, 4.5].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setDraft({ ...draft, minRating: r })}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${
+                    draft.minRating === r ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+                  }`}
+                >
+                  {r === 0 ? "Any" : `${r}★`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={handleReset}
+            className="flex-1 py-3 rounded-2xl bg-secondary text-sm font-bold text-foreground"
+          >
+            Reset All
+          </button>
+          <button
+            onClick={handleApply}
+            className="flex-2 flex-grow py-3 px-6 rounded-2xl text-sm font-bold text-primary-foreground flex items-center justify-center gap-2"
+            style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
+          >
+            <Check className="w-4 h-4" />
+            Apply Filters
+          </button>
+        </div>
       </div>
-
-      {/* Expanded filter panels */}
-      {expanded === "discount" && (
-        <div className="mt-2 p-3 rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-foreground">Min Discount</span>
-            <button onClick={() => { onChange({ ...filters, minDiscount: 0 }); setExpanded(null); }} className="text-xs text-muted-foreground">Reset</button>
-          </div>
-          <input
-            type="range" min={0} max={50} step={5}
-            value={filters.minDiscount}
-            onChange={(e) => onChange({ ...filters, minDiscount: Number(e.target.value) })}
-            className="w-full accent-primary"
-          />
-          <span className="text-xs text-muted-foreground">{filters.minDiscount}% off</span>
-        </div>
-      )}
-
-      {expanded === "price" && (
-        <div className="mt-2 p-3 rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-foreground">Max Price</span>
-            <button onClick={() => { onChange({ ...filters, priceRange: [0, 10000] }); setExpanded(null); }} className="text-xs text-muted-foreground">Reset</button>
-          </div>
-          <input
-            type="range" min={1000} max={10000} step={500}
-            value={filters.priceRange[1]}
-            onChange={(e) => onChange({ ...filters, priceRange: [0, Number(e.target.value)] })}
-            className="w-full accent-primary"
-          />
-          <span className="text-xs text-muted-foreground">Up to ₦{filters.priceRange[1].toLocaleString()}</span>
-        </div>
-      )}
-
-      {expanded === "rating" && (
-        <div className="mt-2 p-3 rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-foreground">Min Rating</span>
-            <button onClick={() => { onChange({ ...filters, minRating: 0 }); setExpanded(null); }} className="text-xs text-muted-foreground">Reset</button>
-          </div>
-          <div className="flex gap-2">
-            {[3, 3.5, 4, 4.5].map((r) => (
-              <button
-                key={r}
-                onClick={() => { onChange({ ...filters, minRating: r }); setExpanded(null); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium ${
-                  filters.minRating === r ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
-                }`}
-              >
-                {r}★+
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
