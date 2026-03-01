@@ -8,8 +8,6 @@ const nigerianFoodSuggestions = [
   "Pepper Soup", "Suya", "Shawarma", "Puff Puff", "Chin Chin",
   "Amala", "Efo Riro", "Ofada Rice", "Moi Moi", "Akara",
   "Banga Soup", "Ogbono Soup", "Cake", "Meat Pie", "Dodo",
-  "Plantain", "Yam Porridge", "Nkwobi", "Asun", "Kilishi",
-  "Zobo", "Chapman", "Chicken Wrap", "Grilled Fish", "Catfish",
 ];
 
 interface SearchOverlayProps {
@@ -72,17 +70,13 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
         <div className="flex gap-2 px-5 mb-4">
           <button
             onClick={() => setSearchType("food")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              searchType === "food" ? "bg-foreground text-background" : "bg-secondary text-foreground"
-            }`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${searchType === "food" ? "bg-foreground text-background" : "bg-secondary text-foreground"}`}
           >
             🍛 Food Items
           </button>
           <button
             onClick={() => setSearchType("shop")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              searchType === "shop" ? "bg-foreground text-background" : "bg-secondary text-foreground"
-            }`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${searchType === "shop" ? "bg-foreground text-background" : "bg-secondary text-foreground"}`}
           >
             🏪 Vendors
           </button>
@@ -94,13 +88,7 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
             <p className="text-xs text-muted-foreground mb-2">Suggestions</p>
             <div className="flex flex-wrap gap-2">
               {matchingSuggestions.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setQuery(s)}
-                  className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground"
-                >
-                  {s}
-                </button>
+                <button key={s} onClick={() => setQuery(s)} className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground">{s}</button>
               ))}
             </div>
           </div>
@@ -116,13 +104,7 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
               {searchType === "food" && (
                 <div className="flex flex-wrap gap-2 justify-center">
                   {["Jollof Rice", "Shawarma", "Suya", "Beans", "Puff Puff", "Cake"].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setQuery(s)}
-                      className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground"
-                    >
-                      {s}
-                    </button>
+                    <button key={s} onClick={() => setQuery(s)} className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground">{s}</button>
                   ))}
                 </div>
               )}
@@ -133,31 +115,35 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
             <p className="text-sm text-muted-foreground text-center mt-10">No results found for "{query}"</p>
           )}
 
-          {searchType === "food" && filteredFood.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleFoodTap(item)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border text-left active:scale-[0.99] transition-transform"
-            >
-              <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-foreground truncate">{item.name}</h4>
-                <p className="text-sm font-bold text-primary">₦{item.price.toLocaleString()}</p>
-                <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                  <MapPin className="w-3 h-3" />
-                  <span className="truncate">{item.shopName}</span>
-                  <span>•</span>
-                  <Star className="w-3 h-3 fill-vendoor-amber text-vendoor-amber" />
-                  <span>4.2</span>
-                  <span>•</span>
-                  <Bike className="w-3 h-3 text-primary" />
+          {searchType === "food" && filteredFood.map((item) => {
+            const shop = shops.find((s) => s.id === item.shopId);
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleFoodTap(item)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-card border border-border text-left active:scale-[0.99] transition-transform"
+              >
+                <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground truncate">{item.name}</h4>
+                  <p className="text-sm font-bold text-primary">₦{item.price.toLocaleString()}</p>
+                  <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground flex-wrap">
+                    <MapPin className="w-3 h-3" />
+                    <span className="truncate max-w-[80px]">{item.shopName}</span>
+                    <span>•</span>
+                    <Star className="w-3 h-3 fill-vendoor-amber text-vendoor-amber" />
+                    <span>4.2</span>
+                    <span>•</span>
+                    <Bike className="w-3 h-3 text-primary" />
+                    <span>₦{shop?.deliveryFee?.toLocaleString() ?? "—"}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <Plus className="w-3.5 h-3.5" />
-              </div>
-            </button>
-          ))}
+                <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                  <Plus className="w-3.5 h-3.5" />
+                </div>
+              </button>
+            );
+          })}
 
           {searchType === "shop" && filteredShops.map((shop) => (
             <button
@@ -177,9 +163,7 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
                   <Star className="w-3 h-3 fill-vendoor-amber text-vendoor-amber" />
                   <span className="font-medium text-foreground">{shop.rating}</span>
                 </div>
-                <span className={`inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                  shop.isOpen ? "bg-vendoor-green/15 text-vendoor-green" : "bg-destructive/15 text-destructive"
-                }`}>
+                <span className={`inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${shop.isOpen ? "bg-vendoor-green/15 text-vendoor-green" : "bg-destructive/15 text-destructive"}`}>
                   {shop.isOpen ? "Open" : "Closed"}
                 </span>
               </div>

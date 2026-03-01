@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Star, Wallet, ClipboardList, Moon, Sun, LogOut, Trash2, ChevronRight, Edit3, History, Bookmark } from "lucide-react";
+import { useState, useRef } from "react";
+import { Wallet, ClipboardList, Moon, Sun, LogOut, Trash2, ChevronRight, Edit3, History, Bookmark, Camera, MapPin, Shield, HelpCircle, FileText, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useFavourites } from "@/contexts/FavouritesContext";
@@ -21,27 +21,72 @@ const ProfilePage = () => {
   const [name, setName] = useState("VenDoor User");
   const [nickname, setNickname] = useState("foodie");
   const [location, setLocation] = useState("Nasarawa");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [favTab, setFavTab] = useState<"foods" | "vendors">("foods");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleTheme = () => {
     document.documentElement.classList.toggle("dark");
     setIsDark(!isDark);
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setAvatarUrl(url);
+    }
+  };
+
   const totalSpent = orders.filter((o) => o.paymentStatus === "paid").reduce((s, o) => s + o.total, 0);
   const favFoodItems = foodItems.filter((f) => favouriteFoods.includes(f.id));
   const favShopItems = shops.filter((s) => favouriteShops.includes(s.id));
   const paidOrders = orders.filter((o) => o.paymentStatus === "paid");
+  const activeOrders = orders.filter((o) => o.paymentStatus === "paid" && !o.cancelled && o.stage < 3);
+
+  const settingsRows = [
+    { icon: isDark ? Sun : Moon, label: isDark ? "Light Mode" : "Dark Mode", onClick: toggleTheme },
+    { icon: Bookmark, label: "Saved Items", onClick: () => {} },
+    { icon: Home, label: "Address", onClick: () => {} },
+    { icon: HelpCircle, label: "Support", onClick: () => {} },
+    { icon: FileText, label: "Legal", onClick: () => {} },
+  ];
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background pb-32">
       {/* Avatar & Name */}
       <div className="flex flex-col items-center pt-10 pb-5 px-5 relative">
-        <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-3xl font-bold text-primary border-4 border-background shadow-lg">
-          {name.charAt(0)}
+        <div className="relative">
+          <div
+            className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-3xl font-bold text-primary border-4 border-background shadow-lg overflow-hidden cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              name.charAt(0)
+            )}
+          </div>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md"
+          >
+            <Camera className="w-3.5 h-3.5" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
         </div>
         <h1 className="text-xl font-bold text-foreground mt-3">{name}</h1>
         <p className="text-sm text-muted-foreground">@{nickname}</p>
+        <div className="flex items-center gap-1 mt-1">
+          <MapPin className="w-3 h-3 text-muted-foreground" />
+          <p className="text-xs text-muted-foreground">{location}</p>
+        </div>
         <button
           onClick={() => setShowEdit(true)}
           className="mt-2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground"
@@ -60,21 +105,28 @@ const ProfilePage = () => {
           <p className="text-xl font-bold text-primary">₦{totalSpent.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Total Spent</p>
         </div>
-        <div className="relative flex-1 rounded-2xl bg-secondary p-4 text-center opacity-60 overflow-hidden">
+        <button
+          onClick={() => navigate("/wallet")}
+          className="relative flex-1 rounded-2xl bg-secondary p-4 text-center overflow-hidden active:scale-[0.97] transition-transform"
+        >
           <Wallet className="w-6 h-6 text-vendoor-green mx-auto" />
           <p className="text-xs text-muted-foreground mt-0.5">Wallet</p>
-          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-muted-foreground rotate-[-15deg] bg-secondary/80">Coming Soon</span>
-        </div>
+        </button>
       </div>
 
       {/* Quick links */}
       <div className="flex gap-3 px-5 mb-5">
-        <button onClick={() => navigate("/orders")} className="flex-1 flex items-center gap-2 p-3 rounded-2xl bg-card border border-border">
+        <button onClick={() => navigate("/orders")} className="flex-1 flex items-center gap-2 p-3 rounded-2xl bg-card border border-border relative">
           <ClipboardList className="w-5 h-5 text-primary" />
           <span className="text-sm font-medium text-foreground">My Orders</span>
-          <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
+          {activeOrders.length > 0 && (
+            <span className="ml-auto min-w-[20px] h-5 rounded-full bg-destructive text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
+              {activeOrders.length}
+            </span>
+          )}
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
-        <button className="flex-1 flex items-center gap-2 p-3 rounded-2xl bg-card border border-border">
+        <button onClick={() => navigate("/orders?tab=past")} className="flex-1 flex items-center gap-2 p-3 rounded-2xl bg-card border border-border">
           <History className="w-5 h-5 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">History</span>
           <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
@@ -138,7 +190,7 @@ const ProfilePage = () => {
         )}
       </div>
 
-      {/* Order History */}
+      {/* Recent Orders */}
       {paidOrders.length > 0 && (
         <div className="px-5 mb-5">
           <h3 className="text-base font-bold text-foreground mb-3">Recent Orders</h3>
@@ -164,25 +216,20 @@ const ProfilePage = () => {
       <div className="px-5 mb-4">
         <h3 className="text-base font-bold text-foreground mb-2">Settings</h3>
         <div className="rounded-2xl bg-secondary divide-y divide-border overflow-hidden">
-          <button onClick={toggleTheme} className="w-full flex items-center justify-between p-4 text-left">
-            <div className="flex items-center gap-3">
-              {isDark ? <Sun className="w-4 h-4 text-muted-foreground" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
-              <span className="text-sm font-medium text-foreground">{isDark ? "Light Mode" : "Dark Mode"}</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <button className="w-full flex items-center justify-between p-4 text-left">
-            <div className="flex items-center gap-3">
-              <Bookmark className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Saved Items</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
+          {settingsRows.map(({ icon: Icon, label, onClick }) => (
+            <button key={label} onClick={onClick} className="w-full flex items-center justify-between p-4 text-left">
+              <div className="flex items-center gap-3">
+                <Icon className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">{label}</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Danger zone */}
-      <div className="px-5">
+      <div className="px-5 mb-6">
         <div className="rounded-2xl bg-secondary divide-y divide-border overflow-hidden">
           <button className="w-full flex items-center gap-3 p-4 text-left">
             <LogOut className="w-4 h-4 text-vendoor-orange" />

@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { ArrowLeft, Package, Bike, CheckCircle2, X, Tag, Download, Eye, CreditCard, Clock, MapPin } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Package, Bike, CheckCircle2, X, Tag, Download, Eye, CreditCard, Clock, MapPin, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart, Order } from "@/contexts/CartContext";
+import { foodItems } from "@/data/mockData";
 import BottomNav from "@/components/BottomNav";
 
 const stages = [
@@ -18,10 +19,7 @@ interface ReceiptModalProps {
 const ReceiptModal = ({ order, onClose }: ReceiptModalProps) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
     <div className="absolute inset-0 bg-foreground/50 backdrop-blur-sm" />
-    <div
-      className="relative w-full max-w-sm bg-card rounded-3xl p-6 animate-in zoom-in-95 fade-in"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="relative w-full max-w-sm bg-card rounded-3xl p-6 animate-in zoom-in-95 fade-in" onClick={(e) => e.stopPropagation()}>
       <div className="text-center mb-5">
         <div className="w-14 h-14 rounded-full bg-vendoor-green/15 flex items-center justify-center mx-auto mb-3">
           <CheckCircle2 className="w-7 h-7 text-vendoor-green" />
@@ -29,41 +27,21 @@ const ReceiptModal = ({ order, onClose }: ReceiptModalProps) => (
         <h3 className="text-xl font-bold text-foreground">Payment Confirmed!</h3>
         <p className="text-sm text-muted-foreground mt-1">Your order is being prepared</p>
       </div>
-
       <div className="bg-secondary rounded-2xl p-4 space-y-2 text-sm mb-5">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Order ID</span>
-          <span className="font-bold text-foreground">{order.id}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Vendor</span>
-          <span className="font-medium text-foreground">{order.vendorName}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Items</span>
-          <span className="font-medium text-foreground">{order.items.length} item(s)</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Delivery</span>
-          <span className="font-medium text-foreground capitalize">{order.deliveryType}</span>
-        </div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Order ID</span><span className="font-bold text-foreground">{order.id}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Vendor</span><span className="font-medium text-foreground">{order.vendorName}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span className="font-medium text-foreground">{order.items.length} item(s)</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span className="font-medium text-foreground capitalize">{order.deliveryType}</span></div>
         {order.promoCode && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Promo</span>
-            <span className="font-medium text-vendoor-green">{order.promoCode} (-{order.promoDiscount}%)</span>
-          </div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Promo</span><span className="font-medium text-vendoor-green">{order.promoCode} (-{order.promoDiscount}%)</span></div>
         )}
         <div className="flex justify-between border-t border-border pt-2 mt-2">
           <span className="font-bold text-foreground">Total Paid</span>
           <span className="font-bold text-primary text-base">₦{order.total.toLocaleString()}</span>
         </div>
       </div>
-
       <div className="flex gap-3">
-        <button
-          onClick={onClose}
-          className="flex-1 py-3 rounded-2xl bg-secondary text-sm font-bold text-foreground flex items-center justify-center gap-2"
-        >
+        <button onClick={onClose} className="flex-1 py-3 rounded-2xl bg-secondary text-sm font-bold text-foreground flex items-center justify-center gap-2">
           <Eye className="w-4 h-4" /> View Orders
         </button>
         <button
@@ -86,10 +64,8 @@ interface CheckoutModalProps {
 
 const CheckoutModal = ({ order, onClose, onPay }: CheckoutModalProps) => {
   const [paying, setPaying] = useState(false);
-
   const handlePaystack = async () => {
     setPaying(true);
-    // Simulate Paystack (replace with real Paystack integration)
     await new Promise((r) => setTimeout(r, 2000));
     onPay(order.id);
     setPaying(false);
@@ -98,13 +74,8 @@ const CheckoutModal = ({ order, onClose, onPay }: CheckoutModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
-      <div
-        className="relative w-full max-w-md bg-card rounded-t-3xl p-5 pb-8 animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl p-5 pb-8 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-bold text-foreground mb-4">Confirm & Pay</h3>
-
-        {/* Order summary */}
         <div className="space-y-2 mb-4">
           {order.items.map((item) => (
             <div key={item.food.id} className="flex items-center justify-between text-sm">
@@ -123,19 +94,15 @@ const CheckoutModal = ({ order, onClose, onPay }: CheckoutModalProps) => {
             <span className="text-primary">₦{order.total.toLocaleString()}</span>
           </div>
         </div>
-
         {order.scheduledFor && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-vendoor-amber/10 text-xs text-vendoor-amber font-medium mb-3">
-            <Clock className="w-3.5 h-3.5" />
-            Scheduled: {new Date(order.scheduledFor).toLocaleString()}
+            <Clock className="w-3.5 h-3.5" /> Scheduled: {new Date(order.scheduledFor).toLocaleString()}
           </div>
         )}
-
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary text-xs text-muted-foreground mb-4">
           <MapPin className="w-3.5 h-3.5 text-primary" />
           <span className="capitalize">{order.deliveryType} • {order.vendorName}</span>
         </div>
-
         <button
           onClick={handlePaystack}
           disabled={paying}
@@ -150,18 +117,151 @@ const CheckoutModal = ({ order, onClose, onPay }: CheckoutModalProps) => {
   );
 };
 
+interface OrderCardProps {
+  order: Order;
+  canCancel: (o: Order) => boolean;
+  isLateCancel: (o: Order) => boolean;
+  onCancel: (id: string) => void;
+  onReorder: (o: Order) => void;
+  isPast?: boolean;
+}
+
+const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, isPast }: OrderCardProps) => {
+  const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
+
+  return (
+    <div className="rounded-2xl bg-card border border-border overflow-hidden">
+      {/* Tap header to expand */}
+      <button
+        className="w-full flex items-center justify-between p-4 text-left"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <div className="flex-1 min-w-0 mr-2">
+          <p className="text-sm font-bold text-foreground">{order.id}</p>
+          <p className="text-xs text-muted-foreground">{order.vendorName} • {new Date(order.date).toLocaleDateString()}</p>
+          <p className="text-xs text-muted-foreground capitalize mt-0.5">{order.deliveryType}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-sm font-bold text-primary">₦{order.total.toLocaleString()}</span>
+          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
+          {/* Items */}
+          <div className="space-y-1.5">
+            {order.items.map((item) => (
+              <div key={item.food.id} className="flex items-center justify-between text-xs">
+                <span className="text-foreground">{item.quantity}x {item.food.name}</span>
+                <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Delivery info */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin className="w-3.5 h-3.5 text-primary" />
+            <span className="capitalize font-medium text-foreground">{order.deliveryType}</span>
+            {order.scheduledFor && (
+              <><span>•</span><Clock className="w-3.5 h-3.5" /><span>{new Date(order.scheduledFor).toLocaleString()}</span></>
+            )}
+          </div>
+
+          {/* Promo */}
+          {order.promoCode && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-vendoor-green/10 text-xs text-vendoor-green font-medium">
+              <Tag className="w-3.5 h-3.5" /> {order.promoCode} — {order.promoDiscount}% off
+            </div>
+          )}
+
+          {/* Special Instructions */}
+          {order.note && (
+            <div className="px-3 py-2 rounded-xl bg-secondary text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">📝 Special Instructions:</span> {order.note}
+            </div>
+          )}
+
+          {/* 3-Stage Tracker */}
+          {!order.cancelled && (
+            <>
+              <div className="flex items-center gap-1">
+                {stages.map((stage, i) => {
+                  const StageIcon = stage.icon;
+                  const isActive = order.stage >= i + 1;
+                  const isCurrent = order.stage === i + 1;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? "bg-primary/15" : "bg-secondary"}`}>
+                        <StageIcon className={`w-4 h-4 ${isActive ? stage.color : "text-muted-foreground"}`} />
+                      </div>
+                      <span className={`text-[10px] font-medium text-center ${isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
+                        {stage.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${(order.stage / 3) * 100}%` }} />
+              </div>
+            </>
+          )}
+
+          {order.cancelled && (
+            <div className="px-3 py-2 rounded-xl bg-destructive/10 text-xs text-destructive font-medium flex items-center gap-1">
+              <X className="w-3.5 h-3.5" /> Order Cancelled
+            </div>
+          )}
+
+          {/* Cancel buttons */}
+          {!order.cancelled && order.stage < 3 && (
+            canCancel(order) ? (
+              <button onClick={() => onCancel(order.id)} className="w-full py-2 rounded-xl bg-vendoor-green/15 text-vendoor-green text-xs font-bold">
+                Cancel Order (Free)
+              </button>
+            ) : isLateCancel(order) ? (
+              <button onClick={() => onCancel(order.id)} className="w-full py-2 rounded-xl bg-destructive/15 text-destructive text-xs font-bold">
+                Late Cancellation
+              </button>
+            ) : null
+          )}
+
+          {/* Reorder on past successful orders */}
+          {isPast && order.stage === 3 && !order.cancelled && (
+            <button
+              onClick={() => onReorder(order)}
+              className="w-full py-2.5 rounded-xl text-xs font-bold text-primary-foreground flex items-center justify-center gap-1.5"
+              style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Reorder
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const OrdersPage = () => {
   const navigate = useNavigate();
-  const { orders, cancelOrder, confirmPayment, placeOrder, items, cartTotal } = useCart();
+  const [searchParams] = useSearchParams();
+  const { orders, cancelOrder, confirmPayment, placeOrder, items, cartTotal, addToCart } = useCart();
   const [checkoutOrder, setCheckoutOrder] = useState<Order | null>(null);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
-  const [activeTab, setActiveTab] = useState<"current" | "past">("current");
+  const [activeTab, setActiveTab] = useState<"current" | "past">(
+    searchParams.get("tab") === "past" ? "past" : "current"
+  );
+
+  useEffect(() => {
+    if (searchParams.get("tab") === "past") setActiveTab("past");
+  }, [searchParams]);
 
   const canCancel = (order: Order) => {
     const elapsed = Date.now() - new Date(order.date).getTime();
     return elapsed < 5 * 60 * 1000;
   };
-
   const isLateCancel = (order: Order) => !canCancel(order) && order.stage >= 2;
 
   const handlePay = (orderId: string) => {
@@ -174,6 +274,15 @@ const OrdersPage = () => {
   const handleCheckout = () => {
     const order = placeOrder();
     setCheckoutOrder(order);
+  };
+
+  const handleReorder = (order: Order) => {
+    order.items.forEach((item) => {
+      const food = foodItems.find((f) => f.id === item.food.id);
+      if (food) addToCart(food, item.quantity, item.deliveryType, item.note, undefined, item.promoCode, item.promoDiscount);
+    });
+    navigate("/orders");
+    setActiveTab("current");
   };
 
   const currentOrders = orders.filter((o) => !o.cancelled && o.stage < 3 && o.paymentStatus === "paid");
@@ -241,19 +350,18 @@ const OrdersPage = () => {
               activeTab === tab ? "bg-foreground text-background" : "bg-secondary text-foreground"
             }`}
           >
-            {tab === "current" ? "Current" : "History"}
+            {tab === "current" ? `Current${currentOrders.length > 0 ? ` (${currentOrders.length})` : ""}` : "History"}
           </button>
         ))}
       </div>
 
-      <div className="px-5 space-y-4 pb-28">
+      <div className="px-5 space-y-3 pb-28">
         {activeTab === "current" && currentOrders.length === 0 && (
           <div className="text-center py-16">
             <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No active orders</p>
           </div>
         )}
-
         {activeTab === "past" && pastOrders.length === 0 && (
           <div className="text-center py-16">
             <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
@@ -262,117 +370,20 @@ const OrdersPage = () => {
         )}
 
         {(activeTab === "current" ? currentOrders : pastOrders).map((order) => (
-          <div key={order.id} className="rounded-2xl bg-card border border-border p-4 space-y-3">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-bold text-foreground">{order.id}</p>
-                <p className="text-xs text-muted-foreground">{order.vendorName} • {new Date(order.date).toLocaleDateString()}</p>
-              </div>
-              <span className="text-sm font-bold text-primary">₦{order.total.toLocaleString()}</span>
-            </div>
-
-            {/* Items */}
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar">
-              {order.items.map((item) => (
-                <div key={item.food.id} className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground">
-                  {item.quantity}x {item.food.name}
-                </div>
-              ))}
-            </div>
-
-            {/* Delivery */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5 text-primary" />
-              <span className="capitalize font-medium text-foreground">{order.deliveryType}</span>
-              {order.scheduledFor && (
-                <>
-                  <span>•</span>
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{new Date(order.scheduledFor).toLocaleString()}</span>
-                </>
-              )}
-            </div>
-
-            {/* Promo */}
-            {order.promoCode && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-vendoor-green/10 text-xs text-vendoor-green font-medium">
-                <Tag className="w-3.5 h-3.5" />
-                {order.promoCode} — {order.promoDiscount}% off applied
-              </div>
-            )}
-
-            {/* Note */}
-            {order.note && (
-              <div className="px-3 py-2 rounded-xl bg-secondary text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">Note:</span> {order.note}
-              </div>
-            )}
-
-            {/* 3-Stage Tracker */}
-            {!order.cancelled && (
-              <>
-                <div className="flex items-center gap-1">
-                  {stages.map((stage, i) => {
-                    const StageIcon = stage.icon;
-                    const isActive = order.stage >= i + 1;
-                    const isCurrent = order.stage === i + 1;
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isActive ? "bg-primary/15" : "bg-secondary"}`}>
-                          <StageIcon className={`w-4 h-4 ${isActive ? stage.color : "text-muted-foreground"}`} />
-                        </div>
-                        <span className={`text-[10px] font-medium text-center ${isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
-                          {stage.label}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all duration-700"
-                    style={{ width: `${(order.stage / 3) * 100}%` }}
-                  />
-                </div>
-              </>
-            )}
-
-            {order.cancelled && (
-              <div className="px-3 py-2 rounded-xl bg-destructive/10 text-xs text-destructive font-medium flex items-center gap-1">
-                <X className="w-3.5 h-3.5" /> Order Cancelled
-              </div>
-            )}
-
-            {/* Cancel buttons */}
-            {!order.cancelled && order.stage < 3 && (
-              <div>
-                {canCancel(order) ? (
-                  <button
-                    onClick={() => cancelOrder(order.id)}
-                    className="w-full py-2 rounded-xl bg-vendoor-green/15 text-vendoor-green text-xs font-bold"
-                  >
-                    Cancel Order (Free)
-                  </button>
-                ) : isLateCancel(order) ? (
-                  <button
-                    onClick={() => cancelOrder(order.id)}
-                    className="w-full py-2 rounded-xl bg-destructive/15 text-destructive text-xs font-bold"
-                  >
-                    Late Cancellation
-                  </button>
-                ) : null}
-              </div>
-            )}
-          </div>
+          <OrderCard
+            key={order.id}
+            order={order}
+            canCancel={canCancel}
+            isLateCancel={isLateCancel}
+            onCancel={cancelOrder}
+            onReorder={handleReorder}
+            isPast={activeTab === "past"}
+          />
         ))}
       </div>
 
-      {checkoutOrder && (
-        <CheckoutModal order={checkoutOrder} onClose={() => setCheckoutOrder(null)} onPay={handlePay} />
-      )}
-      {receiptOrder && (
-        <ReceiptModal order={receiptOrder} onClose={() => setReceiptOrder(null)} />
-      )}
+      {checkoutOrder && <CheckoutModal order={checkoutOrder} onClose={() => setCheckoutOrder(null)} onPay={handlePay} />}
+      {receiptOrder && <ReceiptModal order={receiptOrder} onClose={() => setReceiptOrder(null)} />}
 
       <BottomNav active="orders" />
     </div>
