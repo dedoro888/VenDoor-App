@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, MapPin, Minus, Plus, Sparkles, Calendar, Star, Bike, Tag, ChevronRight } from "lucide-react";
+import { X, Minus, Plus, Sparkles, Calendar, Star, Bike, Tag, ChevronRight, MapPin, Clock, Navigation } from "lucide-react";
 import { FoodItem, shops } from "@/data/mockData";
 import { useCart } from "@/contexts/CartContext";
 import { useFavourites } from "@/contexts/FavouritesContext";
@@ -99,14 +99,32 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {/* Title + price */}
           <div>
-            <h2 className="text-lg font-bold text-foreground">{food.name}</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-xl font-bold text-primary">₦{food.price.toLocaleString()}</p>
+            <h2 className="text-xl font-bold text-foreground">{food.name}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-2xl font-bold text-primary">₦{food.price.toLocaleString()}</p>
               {promoDiscount > 0 && (
                 <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-vendoor-green/15 text-vendoor-green">
                   -{promoDiscount}%
                 </span>
               )}
+            </div>
+            {/* Delivery fee, distance & time — right below price */}
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Bike className="w-3.5 h-3.5 text-primary" />
+                <span>₦{shop?.deliveryFee?.toLocaleString() ?? "—"} delivery</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Navigation className="w-3.5 h-3.5 text-primary" />
+                <span>1.2 km away</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="w-3.5 h-3.5 text-primary" />
+                <span>{shop?.deliveryTime ?? "—"}</span>
+              </div>
+              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${food.isOpen ? "bg-vendoor-green/15 text-vendoor-green" : "bg-destructive/15 text-destructive"}`}>
+                {food.isOpen ? "Open" : "Closed"}
+              </span>
             </div>
           </div>
 
@@ -114,22 +132,53 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="w-4 h-4 text-primary" />
             <span>{food.shopName}</span>
-            <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${food.isOpen ? "bg-vendoor-green/15 text-vendoor-green" : "bg-destructive/15 text-destructive"}`}>
-              {food.isOpen ? "Open" : "Closed"}
-            </span>
           </div>
+
+          {/* Vendor mini card — right after location */}
+          {shop && (
+            <button
+              onClick={() => { onClose(); navigate(`/vendor/${shop.id}`); }}
+              className="w-full flex items-center gap-3 p-3 rounded-2xl bg-secondary active:scale-[0.98] transition-transform"
+            >
+              <img src={shop.image} alt={shop.name} className="w-10 h-10 rounded-xl object-cover" />
+              <div className="flex-1 text-left">
+                <p className="text-sm font-semibold text-foreground">{shop.name}</p>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Star className="w-3 h-3 fill-vendoor-amber text-vendoor-amber" />
+                  <span className="font-medium text-foreground">{shop.rating}</span>
+                  <span>•</span>
+                  <span>{shop.reviews} orders</span>
+                  <span>•</span>
+                  <Bike className="w-3 h-3 text-primary" />
+                  <span>₦{shop.deliveryFee}</span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          )}
 
           {/* Pickup / Delivery */}
           <div className="flex gap-2">
-            {(["pickup", "delivery"] as const).map((type) => (
+            {(["delivery", "pickup"] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setDeliveryType(type)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium capitalize transition-colors ${
+                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
                   deliveryType === type ? "bg-foreground text-background" : "bg-secondary text-foreground"
                 }`}
               >
-                {type === "delivery" ? "🛵 Delivery" : "🏪 Pickup"}
+                {type === "delivery" ? (
+                  <>
+                    <Bike className="w-4 h-4" /> Delivery
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    Pickup
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -217,29 +266,6 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
               </button>
             </div>
           </div>
-
-          {/* Vendor mini card */}
-          {shop && (
-            <button
-              onClick={() => { onClose(); navigate(`/vendor/${shop.id}`); }}
-              className="w-full flex items-center gap-3 p-3 rounded-2xl bg-secondary active:scale-[0.98] transition-transform"
-            >
-              <img src={shop.image} alt={shop.name} className="w-10 h-10 rounded-xl object-cover" />
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-foreground">{shop.name}</p>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Star className="w-3 h-3 fill-vendoor-amber text-vendoor-amber" />
-                  <span className="font-medium text-foreground">{shop.rating}</span>
-                  <span>•</span>
-                  <span>{shop.reviews} orders</span>
-                  <span>•</span>
-                  <Bike className="w-3 h-3 text-primary" />
-                  <span>₦{shop.deliveryFee}</span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
         </div>
 
         {/* Add to Orders button */}

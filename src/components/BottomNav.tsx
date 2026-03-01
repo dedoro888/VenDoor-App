@@ -1,5 +1,6 @@
 import { Home, Search, Compass, ClipboardList, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
 
 interface BottomNavProps {
   active: string;
@@ -16,6 +17,11 @@ const tabs = [
 
 const BottomNav = ({ active, onSearch }: BottomNavProps) => {
   const navigate = useNavigate();
+  const { orders } = useCart();
+
+  const activeOrderCount = orders.filter(
+    (o) => o.paymentStatus === "paid" && !o.cancelled && o.stage < 3
+  ).length;
 
   const handleTap = (tab: typeof tabs[0]) => {
     if (tab.id === "search" && onSearch) {
@@ -45,10 +51,10 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
               <button
                 key={tab.id}
                 onClick={() => handleTap(tab)}
-                className="relative flex items-center justify-center transition-all duration-300 ease-out"
+                className="relative flex items-center justify-center transition-all duration-300 ease-out w-10 h-10"
                 style={{ zIndex: isActive ? 10 : 1 }}
               >
-                {/* Active pill that extends beyond nav */}
+                {/* Active pill */}
                 {isActive && (
                   <div
                     className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full animate-scale-in"
@@ -63,6 +69,18 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
                     isActive ? "text-primary-foreground scale-110" : "text-muted-foreground"
                   }`}
                 />
+                {/* Orders badge */}
+                {tab.id === "orders" && activeOrderCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center px-1 z-20"
+                    style={{
+                      background: "hsl(var(--destructive))",
+                      color: "hsl(var(--primary-foreground))",
+                    }}
+                  >
+                    {activeOrderCount > 9 ? "9+" : activeOrderCount}
+                  </span>
+                )}
               </button>
             );
           })}
