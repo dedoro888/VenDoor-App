@@ -48,17 +48,17 @@ const ProfilePage = () => {
     { icon: isDark ? Sun : Moon, label: isDark ? "Light Mode" : "Dark Mode", onClick: toggleTheme },
     { icon: Bookmark, label: "Saved Items", onClick: () => {} },
     { icon: Home, label: "Address", onClick: () => {} },
-    { icon: HelpCircle, label: "Support", onClick: () => {} },
+    { icon: HelpCircle, label: "Support & Help", onClick: () => navigate("/support") },
     { icon: FileText, label: "Legal", onClick: () => {} },
   ];
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background pb-32">
+    <div className="max-w-md mx-auto min-h-screen bg-background pb-32 page-enter">
       {/* Avatar & Name */}
       <div className="flex flex-col items-center pt-10 pb-5 px-5 relative">
         <div className="relative">
           <div
-            className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-3xl font-bold text-primary border-4 border-background shadow-lg overflow-hidden cursor-pointer"
+            className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-3xl font-bold text-primary border-4 border-background shadow-lg overflow-hidden cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
             {avatarUrl ? (
@@ -89,7 +89,7 @@ const ProfilePage = () => {
         </div>
         <button
           onClick={() => setShowEdit(true)}
-          className="mt-2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground"
+          className="mt-2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground"
         >
           <Edit3 className="w-3.5 h-3.5" /> Edit Profile
         </button>
@@ -97,17 +97,17 @@ const ProfilePage = () => {
 
       {/* Quick stats */}
       <div className="flex gap-3 px-5 mb-5">
-        <div className="flex-1 rounded-2xl bg-secondary p-4 text-center">
+        <div className="flex-1 rounded-2xl bg-muted p-4 text-center">
           <p className="text-2xl font-bold text-foreground">{paidOrders.length}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Orders</p>
         </div>
-        <div className="flex-1 rounded-2xl bg-secondary p-4 text-center">
+        <div className="flex-1 rounded-2xl bg-muted p-4 text-center">
           <p className="text-xl font-bold text-primary">₦{totalSpent.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Total Spent</p>
         </div>
         <button
           onClick={() => navigate("/wallet")}
-          className="relative flex-1 rounded-2xl bg-secondary p-4 text-center overflow-hidden active:scale-[0.97] transition-transform"
+          className="relative flex-1 rounded-2xl bg-muted p-4 text-center overflow-hidden active:scale-[0.97] transition-transform"
         >
           <Wallet className="w-6 h-6 text-vendoor-green mx-auto" />
           <p className="text-xs text-muted-foreground mt-0.5">Wallet</p>
@@ -140,13 +140,13 @@ const ProfilePage = () => {
           <div className="flex gap-1">
             <button
               onClick={() => setFavTab("foods")}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${favTab === "foods" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${favTab === "foods" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}
             >
               Foods
             </button>
             <button
               onClick={() => setFavTab("vendors")}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${favTab === "vendors" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${favTab === "vendors" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}
             >
               Vendors
             </button>
@@ -215,7 +215,7 @@ const ProfilePage = () => {
       {/* Settings */}
       <div className="px-5 mb-4">
         <h3 className="text-base font-bold text-foreground mb-2">Settings</h3>
-        <div className="rounded-2xl bg-secondary divide-y divide-border overflow-hidden">
+        <div className="rounded-2xl bg-muted divide-y divide-border overflow-hidden">
           {settingsRows.map(({ icon: Icon, label, onClick }) => (
             <button key={label} onClick={onClick} className="w-full flex items-center justify-between p-4 text-left">
               <div className="flex items-center gap-3">
@@ -230,7 +230,7 @@ const ProfilePage = () => {
 
       {/* Danger zone */}
       <div className="px-5 mb-6">
-        <div className="rounded-2xl bg-secondary divide-y divide-border overflow-hidden">
+        <div className="rounded-2xl bg-muted divide-y divide-border overflow-hidden">
           <button className="w-full flex items-center gap-3 p-4 text-left">
             <LogOut className="w-4 h-4 text-vendoor-orange" />
             <span className="text-sm font-medium text-vendoor-orange">Log Out</span>
@@ -244,9 +244,9 @@ const ProfilePage = () => {
 
       {/* Edit Profile Sheet */}
       {showEdit && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowEdit(false)}>
+        <div className="fixed inset-0 z-[70] flex items-end justify-center" onClick={() => setShowEdit(false)}>
           <div className="absolute inset-0 bg-foreground/40" />
-          <div className="relative w-full max-w-md bg-card rounded-t-3xl p-6 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-2xl bg-muted p-6 animate-slide-up" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-foreground mb-4">Edit Profile</h3>
             <div className="space-y-3">
               {[
@@ -259,7 +259,7 @@ const ProfilePage = () => {
                   <input
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full mt-1 px-4 py-2.5 rounded-xl bg-secondary text-sm text-foreground outline-none"
+                    className="w-full mt-1 px-4 py-2.5 rounded-xl bg-muted text-sm text-foreground outline-none"
                   />
                 </div>
               ))}

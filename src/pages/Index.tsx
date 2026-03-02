@@ -35,7 +35,7 @@ const Index = () => {
     filters.maxDeliveryTime < 60;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background relative">
+    <div className="max-w-md mx-auto min-h-screen bg-background relative page-enter">
       <AppHeader onFilterTap={() => setShowFilters(!showFilters)} hasActiveFilters={hasActiveFilters} />
 
       <CategoryFilter active={activeCategory} onSelect={setActiveCategory} />

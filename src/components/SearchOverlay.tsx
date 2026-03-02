@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search, X, MapPin, Star, Bike, Plus } from "lucide-react";
 import { foodItems, shops, FoodItem } from "@/data/mockData";
 import { useNavigate } from "react-router-dom";
+import BottomNav from "@/components/BottomNav";
 
 const nigerianFoodSuggestions = [
   "Jollof Rice", "Fried Rice", "Beans", "Pounded Yam", "Egusi Soup",
@@ -47,10 +48,10 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-background z-50 animate-slide-up">
-      <div className="max-w-md mx-auto">
+    <div className="fixed inset-0 bg-background z-40 flex flex-col">
+      <div className="max-w-md mx-auto w-full flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 pt-4 pb-3">
+        <div className="flex items-center gap-3 px-5 pt-4 pb-3 flex-shrink-0">
           <button onClick={onClose} className="p-1">
             <X className="w-5 h-5 text-foreground" />
           </button>
@@ -61,7 +62,7 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchType === "food" ? "Search food items..." : "Search vendors..."}
-              className="w-full pl-9 pr-4 py-2.5 rounded-full bg-secondary text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full pl-9 pr-4 py-2.5 rounded-full bg-muted text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
         </div>
@@ -70,13 +71,13 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
         <div className="flex gap-2 px-5 mb-4">
           <button
             onClick={() => setSearchType("food")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${searchType === "food" ? "bg-foreground text-background" : "bg-secondary text-foreground"}`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${searchType === "food" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}
           >
             🍛 Food Items
           </button>
           <button
             onClick={() => setSearchType("shop")}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${searchType === "shop" ? "bg-foreground text-background" : "bg-secondary text-foreground"}`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${searchType === "shop" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}
           >
             🏪 Vendors
           </button>
@@ -88,14 +89,14 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
             <p className="text-xs text-muted-foreground mb-2">Suggestions</p>
             <div className="flex flex-wrap gap-2">
               {matchingSuggestions.map((s) => (
-                <button key={s} onClick={() => setQuery(s)} className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground">{s}</button>
+                <button key={s} onClick={() => setQuery(s)} className="px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground">{s}</button>
               ))}
             </div>
           </div>
         )}
 
         {/* Results */}
-        <div className="px-5 space-y-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 180px)" }}>
+        <div className="px-5 space-y-3 overflow-y-auto flex-1 pb-28" style={{ maxHeight: "calc(100vh - 180px)" }}>
           {query.length === 0 && (
             <div className="text-center mt-10">
               <p className="text-sm text-muted-foreground mb-4">
@@ -104,7 +105,7 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
               {searchType === "food" && (
                 <div className="flex flex-wrap gap-2 justify-center">
                   {["Jollof Rice", "Shawarma", "Suya", "Beans", "Puff Puff", "Cake"].map((s) => (
-                    <button key={s} onClick={() => setQuery(s)} className="px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground">{s}</button>
+                    <button key={s} onClick={() => setQuery(s)} className="px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground">{s}</button>
                   ))}
                 </div>
               )}
@@ -171,6 +172,7 @@ const SearchOverlay = ({ isOpen, onClose, onFoodTap }: SearchOverlayProps) => {
           ))}
         </div>
       </div>
+      <BottomNav active="search" onSearch={onClose} />
     </div>
   );
 };

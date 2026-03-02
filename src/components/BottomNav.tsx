@@ -32,7 +32,7 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
   };
 
   return (
-    <nav className="fixed bottom-4 left-0 right-0 z-50 pointer-events-none">
+    <nav className="fixed bottom-4 left-0 right-0 z-30 pointer-events-none">
       <div className="max-w-md mx-auto px-6">
         <div
           className="pointer-events-auto relative flex items-center justify-around py-3 rounded-[28px]"

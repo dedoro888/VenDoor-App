@@ -35,7 +35,7 @@ const TopPlaces = ({ filters }: TopPlacesProps) => {
           <h2 className="text-xl font-bold text-foreground">Top 10 Vendors</h2>
           <p className="text-xs text-muted-foreground">Most orders this week</p>
         </div>
-        <button className="p-2 rounded-full bg-secondary">
+        <button className="p-2 rounded-full bg-muted">
           <ArrowRight className="w-4 h-4 text-foreground" />
         </button>
       </div>

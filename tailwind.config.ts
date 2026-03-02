@@ -57,6 +57,7 @@ export default {
           red: "hsl(var(--vendoor-red))",
           green: "hsl(var(--vendoor-green))",
           "warm-gray": "hsl(var(--vendoor-warm-gray))",
+          surface: "hsl(var(--vendoor-surface))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

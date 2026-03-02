@@ -346,8 +346,8 @@ const OrdersPage = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              activeTab === tab ? "bg-foreground text-background" : "bg-secondary text-foreground"
+        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
             }`}
           >
             {tab === "current" ? `Current${currentOrders.length > 0 ? ` (${currentOrders.length})` : ""}` : "History"}

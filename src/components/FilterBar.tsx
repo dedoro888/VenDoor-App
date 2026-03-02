@@ -34,7 +34,7 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end"
+      className="fixed inset-0 z-[60] flex items-end"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" />
@@ -45,7 +45,7 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-foreground">Filters</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full bg-secondary">
+          <button onClick={onClose} className="p-1.5 rounded-full bg-muted">
             <X className="w-4 h-4 text-foreground" />
           </button>
         </div>
@@ -56,7 +56,7 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
             <button
               onClick={() => setDraft({ ...draft, openNow: !draft.openNow })}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                draft.openNow ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+                draft.openNow ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
               }`}
             >
               <Clock className="w-4 h-4" /> Open Now
@@ -64,7 +64,7 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
             <button
               onClick={() => setDraft({ ...draft, freeDelivery: !draft.freeDelivery })}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                draft.freeDelivery ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+                draft.freeDelivery ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
               }`}
             >
               <Bike className="w-4 h-4" /> Free Delivery
@@ -163,7 +163,7 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
                   key={r}
                   onClick={() => setDraft({ ...draft, minRating: r })}
                   className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${
-                    draft.minRating === r ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+                    draft.minRating === r ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
                   }`}
                 >
                   {r === 0 ? "Any" : `${r}★`}
@@ -177,7 +177,7 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
         <div className="flex gap-3 mt-6">
           <button
             onClick={handleReset}
-            className="flex-1 py-3 rounded-2xl bg-secondary text-sm font-bold text-foreground"
+            className="flex-1 py-3 rounded-2xl bg-muted text-sm font-bold text-foreground"
           >
             Reset All
           </button>

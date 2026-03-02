@@ -35,6 +35,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoApplied, setPromoApplied] = useState("");
   const [promoError, setPromoError] = useState("");
+  const [starPop, setStarPop] = useState(false);
 
   const { addToCart } = useCart();
   const { isFoodFav, toggleFoodFav } = useFavourites();
@@ -68,8 +69,14 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
     onClose();
   };
 
+  const handleFavToggle = () => {
+    toggleFoodFav(food.id);
+    setStarPop(true);
+    setTimeout(() => setStarPop(false), 300);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-sm bg-card rounded-3xl overflow-hidden shadow-2xl max-h-[88vh] flex flex-col animate-in zoom-in-95 fade-in duration-200"
@@ -83,10 +90,10 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
             <X className="w-4 h-4 text-foreground" />
           </button>
           <button
-            onClick={() => toggleFoodFav(food.id)}
-            className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md ${isFav ? "bg-vendoor-red/20 text-vendoor-red" : "bg-card/80 text-foreground"}`}
+            onClick={handleFavToggle}
+            className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-colors ${isFav ? "bg-destructive/20 text-destructive" : "bg-card/80 text-foreground"}`}
           >
-            <FourPointStar filled={isFav} className="w-5 h-5" />
+            <FourPointStar filled={isFav} className={`w-5 h-5 ${starPop ? "star-pop" : ""}`} />
           </button>
           {!food.isOpen && (
             <div className="absolute inset-0 bg-foreground/50 flex items-center justify-center">
@@ -103,7 +110,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
             <div className="flex items-center gap-2 mt-1">
               <p className="text-2xl font-bold text-primary">₦{food.price.toLocaleString()}</p>
               {promoDiscount > 0 && (
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-vendoor-green/15 text-vendoor-green">
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">
                   -{promoDiscount}%
                 </span>
               )}
@@ -122,7 +129,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
                 <Clock className="w-3.5 h-3.5 text-primary" />
                 <span>{shop?.deliveryTime ?? "—"}</span>
               </div>
-              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${food.isOpen ? "bg-vendoor-green/15 text-vendoor-green" : "bg-destructive/15 text-destructive"}`}>
+              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${food.isOpen ? "bg-green-100 text-green-700" : "bg-destructive/15 text-destructive"}`}>
                 {food.isOpen ? "Open" : "Closed"}
               </span>
             </div>
@@ -138,7 +145,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
           {shop && (
             <button
               onClick={() => { onClose(); navigate(`/vendor/${shop.id}`); }}
-              className="w-full flex items-center gap-3 p-3 rounded-2xl bg-secondary active:scale-[0.98] transition-transform"
+              className="w-full flex items-center gap-3 p-3 rounded-2xl bg-muted active:scale-[0.98] transition-transform"
             >
               <img src={shop.image} alt={shop.name} className="w-10 h-10 rounded-xl object-cover" />
               <div className="flex-1 text-left">
@@ -164,7 +171,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
                 key={type}
                 onClick={() => setDeliveryType(type)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-                  deliveryType === type ? "bg-foreground text-background" : "bg-secondary text-foreground"
+                  deliveryType === type ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
                 }`}
               >
                 {type === "delivery" ? (
@@ -187,7 +194,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
           <button
             onClick={() => setScheduling(!scheduling)}
             className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-              scheduling ? "bg-primary/15 text-primary" : "bg-secondary text-foreground"
+              scheduling ? "bg-primary/15 text-primary" : "bg-muted text-foreground"
             }`}
           >
             <Calendar className="w-4 h-4" />
@@ -200,14 +207,14 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
                 type="date"
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-xl bg-secondary text-foreground text-sm border-none outline-none"
+                className="flex-1 px-3 py-2 rounded-xl bg-muted text-foreground text-sm border-none outline-none"
                 min={new Date().toISOString().split("T")[0]}
               />
               <input
                 type="time"
                 value={scheduleTime}
                 onChange={(e) => setScheduleTime(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-xl bg-secondary text-foreground text-sm border-none outline-none"
+                className="flex-1 px-3 py-2 rounded-xl bg-muted text-foreground text-sm border-none outline-none"
               />
             </div>
           )}
@@ -220,7 +227,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
 
           {/* Promo code */}
           <div className="flex gap-2">
-            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-secondary">
+            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-muted">
               <Tag className="w-3.5 h-3.5 text-muted-foreground" />
               <input
                 value={promoInput}
@@ -237,14 +244,14 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
             </button>
           </div>
           {promoError && <p className="text-xs text-destructive -mt-1">{promoError}</p>}
-          {promoApplied && <p className="text-xs text-vendoor-green -mt-1">✓ {promoApplied} applied — {promoDiscount}% off</p>}
+          {promoApplied && <p className="text-xs text-green-600 -mt-1">✓ {promoApplied} applied — {promoDiscount}% off</p>}
 
           {/* Note */}
           <textarea
             placeholder="Special instructions (e.g., less pepper, no onions)..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl bg-secondary text-sm text-foreground placeholder:text-muted-foreground resize-none h-14 border-none outline-none"
+            className="w-full px-3 py-2.5 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground resize-none h-14 border-none outline-none"
           />
 
           {/* Quantity */}
@@ -253,7 +260,7 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-foreground"
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-foreground"
               >
                 <Minus className="w-4 h-4" />
               </button>
@@ -273,13 +280,13 @@ const FoodItemModal = ({ food, onClose }: FoodItemModalProps) => {
           {promoDiscount > 0 && (
             <div className="flex items-center justify-between text-xs mb-2 px-1">
               <span className="text-muted-foreground">Original: ₦{basePrice.toLocaleString()}</span>
-              <span className="text-vendoor-green font-medium">Saving ₦{discountAmount.toLocaleString()}</span>
+              <span className="text-green-600 font-medium">Saving ₦{discountAmount.toLocaleString()}</span>
             </div>
           )}
           <button
             onClick={handleAddToOrders}
             disabled={!food.isOpen}
-            className="w-full py-4 rounded-2xl text-base font-bold relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+            className="w-full py-4 rounded-2xl text-base font-bold relative overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] btn-press"
             style={{
               background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--vendoor-amber)) 50%, hsl(var(--primary)) 100%)",
               backgroundSize: "200% 200%",
