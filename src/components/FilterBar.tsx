@@ -18,6 +18,9 @@ interface FilterBarProps {
   defaultFilters: Filters;
 }
 
+// NAV_HEIGHT: the bottom nav is approx 76px tall (pill + padding)
+const NAV_HEIGHT = 76;
+
 const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProps) => {
   const [draft, setDraft] = useState<Filters>({ ...filters });
 
@@ -39,8 +42,12 @@ const FilterBar = ({ filters, onChange, onClose, defaultFilters }: FilterBarProp
     >
       <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-md mx-auto bg-card rounded-t-3xl p-5 pb-8 animate-slide-up shadow-2xl"
-        style={{ maxHeight: "80vh", overflowY: "auto" }}
+        className="relative w-full max-w-md mx-auto bg-card rounded-t-3xl p-5 animate-slide-up shadow-2xl"
+        style={{
+          maxHeight: "80vh",
+          overflowY: "auto",
+          paddingBottom: `calc(${NAV_HEIGHT}px + 1.25rem)`,
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">

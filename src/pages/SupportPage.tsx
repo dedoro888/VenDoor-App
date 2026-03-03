@@ -78,7 +78,7 @@ const SupportPage = () => {
   const quickReplies = ["Track my order", "Payment issue", "Request refund", "Cancel order"];
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background flex flex-col">
+    <div className="max-w-md mx-auto h-screen bg-background flex flex-col">
       {/* Header */}
       <div
         className="flex items-center gap-3 px-5 pt-4 pb-4 border-b border-border flex-shrink-0"
@@ -96,7 +96,7 @@ const SupportPage = () => {
           <div>
             <p className="text-sm font-bold text-white">VenDoor Support</p>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-vendoor-green animate-pulse" />
               <p className="text-[11px] text-white/80">Online · Typically replies instantly</p>
             </div>
           </div>
@@ -104,7 +104,7 @@ const SupportPage = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-4" style={{ maxHeight: "calc(100vh - 220px)" }}>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ minHeight: 0 }}>
         {messages.map((msg, i) => (
           <div
             key={msg.id}

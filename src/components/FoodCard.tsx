@@ -40,7 +40,7 @@ const FoodCard = ({ food, onTap }: FoodCardProps) => {
       onClick={() => onTap(food)}
       className="flex-shrink-0 w-44 text-left card-lift"
     >
-      <div className="relative rounded-2xl overflow-hidden h-36 bg-muted">
+      <div className="relative rounded-3xl overflow-hidden h-36 bg-muted shadow-sm">
         <img
           src={food.image}
           alt={food.name}

@@ -35,11 +35,22 @@ const Index = () => {
     filters.maxDeliveryTime < 60;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background relative page-enter">
-      <AppHeader onFilterTap={() => setShowFilters(!showFilters)} hasActiveFilters={hasActiveFilters} />
+    /* Scaffold: full screen container, nav fixed outside scroll flow */
+    <div className="max-w-md mx-auto h-screen flex flex-col bg-background relative">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-24 page-enter">
+        <AppHeader onFilterTap={() => setShowFilters(!showFilters)} hasActiveFilters={hasActiveFilters} />
+        <CategoryFilter active={activeCategory} onSelect={setActiveCategory} />
+        <TopPlaces filters={filters} onFoodTap={setSelectedFood} />
+        <MealSection title="Meals under 5k" filterFn={(s) => s.deliveryFee <= 1000} onFoodTap={setSelectedFood} />
+        <MealSection title="Save up on local brands" onFoodTap={setSelectedFood} />
+        <div className="h-4" />
+      </div>
 
-      <CategoryFilter active={activeCategory} onSelect={setActiveCategory} />
+      {/* Fixed bottom nav — outside scroll container */}
+      <BottomNav active="home" onSearch={() => setSearchOpen(true)} />
 
+      {/* Filter panel — slides up from nav bar height */}
       {showFilters && (
         <FilterBar
           filters={filters}
@@ -49,15 +60,7 @@ const Index = () => {
         />
       )}
 
-      <TopPlaces filters={filters} onFoodTap={setSelectedFood} />
-
-      <MealSection title="Meals under 5k" filterFn={(s) => s.deliveryFee <= 1000} onFoodTap={setSelectedFood} />
-
-      <MealSection title="Save up on local brands" onFoodTap={setSelectedFood} />
-
-      <div className="h-28" />
-
-      <BottomNav active="home" onSearch={() => setSearchOpen(true)} />
+      {/* Overlays */}
       <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} onFoodTap={setSelectedFood} />
       <FoodItemModal food={selectedFood} onClose={() => setSelectedFood(null)} />
     </div>

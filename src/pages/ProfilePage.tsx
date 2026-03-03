@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Wallet, ClipboardList, Moon, Sun, LogOut, Trash2, ChevronRight, Edit3, History, Bookmark, Camera, MapPin, Shield, HelpCircle, FileText, Home } from "lucide-react";
+import { Wallet, ClipboardList, Moon, Sun, LogOut, Trash2, ChevronRight, Edit3, History, Bookmark, Camera, MapPin, HelpCircle, FileText, Home, Navigation, X, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useFavourites } from "@/contexts/FavouritesContext";
@@ -12,12 +12,82 @@ const FourPointStar = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const AddressModal = ({ onClose }: { onClose: () => void }) => {
+  const [addressLine, setAddressLine] = useState("");
+  const [locating, setLocating] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const useGPS = () => {
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setAddressLine(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+        setLocating(false);
+      },
+      () => {
+        setAddressLine("Location unavailable");
+        setLocating(false);
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-md bg-card rounded-t-3xl p-5 animate-slide-up shadow-2xl"
+        style={{ paddingBottom: "calc(76px + 1.25rem)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-foreground">Your Address</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full bg-muted">
+            <X className="w-4 h-4 text-foreground" />
+          </button>
+        </div>
+
+        <label className="text-xs text-muted-foreground">Street / Area / City</label>
+        <input
+          value={addressLine}
+          onChange={(e) => setAddressLine(e.target.value)}
+          placeholder="e.g. 12 Market Road, Nasarawa"
+          className="w-full mt-1 mb-3 px-4 py-2.5 rounded-xl bg-muted text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+        />
+
+        <button
+          onClick={useGPS}
+          disabled={locating}
+          className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-secondary/30 text-sm font-medium text-secondary disabled:opacity-60"
+        >
+          <Navigation className="w-4 h-4" />
+          {locating ? "Detecting..." : "Use My Current Location"}
+        </button>
+
+        {saved && (
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-vendoor-green/10 text-vendoor-green text-xs font-medium">
+            <Check className="w-3.5 h-3.5" /> Address saved!
+          </div>
+        )}
+
+        <button
+          onClick={() => { setSaved(true); setTimeout(onClose, 900); }}
+          className="w-full py-3 rounded-2xl text-sm font-bold text-primary-foreground"
+          style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
+        >
+          Save Address
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { orders } = useCart();
   const { favouriteFoods, favouriteShops } = useFavourites();
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains("dark"));
   const [showEdit, setShowEdit] = useState(false);
+  const [showAddress, setShowAddress] = useState(false);
   const [name, setName] = useState("VenDoor User");
   const [nickname, setNickname] = useState("foodie");
   const [location, setLocation] = useState("Nasarawa");
@@ -46,14 +116,15 @@ const ProfilePage = () => {
 
   const settingsRows = [
     { icon: isDark ? Sun : Moon, label: isDark ? "Light Mode" : "Dark Mode", onClick: toggleTheme },
-    { icon: Bookmark, label: "Saved Items", onClick: () => {} },
-    { icon: Home, label: "Address", onClick: () => {} },
+    { icon: Bookmark, label: "Saved Items", onClick: () => { setFavTab("foods"); document.getElementById("favourites-section")?.scrollIntoView({ behavior: "smooth" }); } },
+    { icon: Home, label: "Address", onClick: () => setShowAddress(true) },
     { icon: HelpCircle, label: "Support & Help", onClick: () => navigate("/support") },
     { icon: FileText, label: "Legal", onClick: () => {} },
   ];
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background pb-32 page-enter">
+    <div className="max-w-md mx-auto h-screen flex flex-col bg-background page-enter">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
       {/* Avatar & Name */}
       <div className="flex flex-col items-center pt-10 pb-5 px-5 relative">
         <div className="relative">
@@ -134,7 +205,7 @@ const ProfilePage = () => {
       </div>
 
       {/* Favourites with tabs */}
-      <div className="px-5 mb-5">
+      <div id="favourites-section" className="px-5 mb-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold text-foreground">Favourites</h3>
           <div className="flex gap-1">
@@ -270,6 +341,9 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+      </div>{/* end scrollable */}
+
+      {showAddress && <AddressModal onClose={() => setShowAddress(false)} />}
 
       <BottomNav active="profile" />
     </div>

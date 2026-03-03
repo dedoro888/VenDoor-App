@@ -290,14 +290,19 @@ const OrdersPage = () => {
   const pendingOrders = orders.filter((o) => o.paymentStatus === "pending" && !o.cancelled);
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background">
-      <div className="flex items-center gap-3 px-5 pt-4 pb-3">
-        <button onClick={() => navigate("/")} className="p-1">
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </button>
-        <h1 className="text-xl font-bold text-foreground">My Orders</h1>
+    <div className="max-w-md mx-auto h-screen flex flex-col bg-background">
+      {/* Fixed top header */}
+      <div className="flex-shrink-0 px-5 pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate("/")} className="p-1">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <h1 className="text-xl font-bold text-foreground">My Orders</h1>
+        </div>
       </div>
 
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
       {/* Cart items to checkout */}
       {items.length > 0 && (
         <div className="mx-5 mb-4 p-4 rounded-2xl bg-card border border-border">
@@ -346,7 +351,7 @@ const OrdersPage = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
             }`}
           >
@@ -355,7 +360,7 @@ const OrdersPage = () => {
         ))}
       </div>
 
-      <div className="px-5 space-y-3 pb-28">
+      <div className="px-5 space-y-3">
         {activeTab === "current" && currentOrders.length === 0 && (
           <div className="text-center py-16">
             <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
@@ -381,6 +386,7 @@ const OrdersPage = () => {
           />
         ))}
       </div>
+      </div>{/* end scrollable */}
 
       {checkoutOrder && <CheckoutModal order={checkoutOrder} onClose={() => setCheckoutOrder(null)} onPay={handlePay} />}
       {receiptOrder && <ReceiptModal order={receiptOrder} onClose={() => setReceiptOrder(null)} />}

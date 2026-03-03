@@ -47,7 +47,8 @@ const WalletPage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background pb-32">
+    <div className="max-w-md mx-auto h-screen flex flex-col bg-background">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-5 pb-4">
         <button onClick={() => navigate("/profile")} className="p-1">
@@ -225,6 +226,7 @@ const WalletPage = () => {
           </div>
         </div>
       )}
+      </div>{/* end scrollable */}
 
       <BottomNav active="profile" />
     </div>
