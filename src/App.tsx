@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { FavouritesProvider } from "@/contexts/FavouritesContext";
 import { LocationProvider } from "@/contexts/LocationContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
+import SplashScreen from "./pages/SplashScreen";
 import OnboardingPage from "./pages/OnboardingPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
@@ -21,30 +23,33 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <CartProvider>
-        <FavouritesProvider>
-          <LocationProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/welcome" element={<OnboardingPage />} />
-                <Route path="/" element={<Index />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/discover" element={<DiscoverPage />} />
-                <Route path="/vendor/:id" element={<VendorPage />} />
-                <Route path="/wallet" element={<WalletPage />} />
-                <Route path="/support" element={<SupportPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </LocationProvider>
-        </FavouritesProvider>
-      </CartProvider>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <CartProvider>
+          <FavouritesProvider>
+            <LocationProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/splash" element={<SplashScreen />} />
+                  <Route path="/welcome" element={<OnboardingPage />} />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/orders" element={<OrdersPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/discover" element={<DiscoverPage />} />
+                  <Route path="/vendor/:id" element={<VendorPage />} />
+                  <Route path="/wallet" element={<WalletPage />} />
+                  <Route path="/support" element={<SupportPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </LocationProvider>
+          </FavouritesProvider>
+        </CartProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

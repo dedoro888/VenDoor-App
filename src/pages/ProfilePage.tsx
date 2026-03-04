@@ -3,6 +3,7 @@ import { Wallet, ClipboardList, Moon, Sun, LogOut, Trash2, ChevronRight, Edit3, 
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useFavourites } from "@/contexts/FavouritesContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { foodItems, shops } from "@/data/mockData";
 import BottomNav from "@/components/BottomNav";
 
@@ -16,18 +17,36 @@ const AddressModal = ({ onClose }: { onClose: () => void }) => {
   const [addressLine, setAddressLine] = useState("");
   const [locating, setLocating] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [gpsError, setGpsError] = useState("");
 
   const useGPS = () => {
     setLocating(true);
+    setGpsError("");
+    if (!navigator.geolocation) {
+      setGpsError("Geolocation is not supported by your browser.");
+      setLocating(false);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setAddressLine(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await res.json();
+          const addr = data.display_name ?? `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          setAddressLine(addr);
+        } catch {
+          setAddressLine(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        }
         setLocating(false);
       },
       () => {
-        setAddressLine("Location unavailable");
+        setGpsError("Location permission required to auto-detect address.");
         setLocating(false);
-      }
+      },
+      { timeout: 8000 }
     );
   };
 
@@ -57,14 +76,24 @@ const AddressModal = ({ onClose }: { onClose: () => void }) => {
         <button
           onClick={useGPS}
           disabled={locating}
-          className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-secondary/30 text-sm font-medium text-secondary disabled:opacity-60"
+          className="w-full mb-2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60"
+          style={{
+            background: "hsl(var(--secondary) / 0.15)",
+            border: "1px solid hsl(var(--secondary) / 0.3)",
+            color: "hsl(var(--secondary))",
+          }}
         >
           <Navigation className="w-4 h-4" />
-          {locating ? "Detecting..." : "Use My Current Location"}
+          {locating ? "Detecting location..." : "Use My Current Location"}
         </button>
 
+        {gpsError && (
+          <p className="text-xs mb-3 px-1" style={{ color: "hsl(var(--destructive))" }}>{gpsError}</p>
+        )}
+
         {saved && (
-          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl bg-vendoor-green/10 text-vendoor-green text-xs font-medium">
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl text-xs font-medium"
+            style={{ background: "hsl(var(--secondary) / 0.12)", color: "hsl(var(--secondary))" }}>
             <Check className="w-3.5 h-3.5" /> Address saved!
           </div>
         )}
@@ -85,7 +114,8 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const { orders } = useCart();
   const { favouriteFoods, favouriteShops } = useFavourites();
-  const [isDark, setIsDark] = useState(document.documentElement.classList.contains("dark"));
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
   const [showEdit, setShowEdit] = useState(false);
   const [showAddress, setShowAddress] = useState(false);
   const [name, setName] = useState("VenDoor User");
@@ -95,10 +125,6 @@ const ProfilePage = () => {
   const [favTab, setFavTab] = useState<"foods" | "vendors">("foods");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-    setIsDark(!isDark);
-  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,7 +150,7 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-background page-enter">
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
       {/* Avatar & Name */}
       <div className="flex flex-col items-center pt-10 pb-5 px-5 relative">
         <div className="relative">

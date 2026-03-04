@@ -1,6 +1,7 @@
 import { Home, Search, Compass, ClipboardList, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { useRef } from "react";
 
 interface BottomNavProps {
   active: string;
@@ -17,29 +18,41 @@ const tabs = [
 
 const BottomNav = ({ active, onSearch }: BottomNavProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { orders } = useCart();
+  const lastTap = useRef<Record<string, number>>({});
 
   const activeOrderCount = orders.filter(
     (o) => o.paymentStatus === "paid" && !o.cancelled && o.stage < 3
   ).length;
 
   const handleTap = (tab: typeof tabs[0]) => {
+    // Debounce: ignore taps within 400ms
+    const now = Date.now();
+    if (now - (lastTap.current[tab.id] ?? 0) < 400) return;
+    lastTap.current[tab.id] = now;
+
     if (tab.id === "search" && onSearch) {
       onSearch();
-    } else if (tab.path) {
+      return;
+    }
+    if (tab.path && location.pathname !== tab.path) {
       navigate(tab.path);
     }
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none">
-      <div className="max-w-md mx-auto px-4 pb-4 pt-2 relative pointer-events-auto">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
+      <div className="w-full max-w-md px-4 pb-3 pt-1 pointer-events-auto">
         <div
-          className="flex items-center justify-around py-2 px-2 rounded-[24px]"
+          className="flex items-center justify-around py-1.5 px-1 rounded-[24px]"
           style={{
-            background: "hsl(20 15% 10%)",
-            border: "1px solid hsl(20 12% 22%)",
-            boxShadow: "0 -4px 24px hsl(0 0% 0% / 0.4), 0 8px 32px hsl(0 0% 0% / 0.3)",
+            background: "hsl(var(--card))",
+            border: "1px solid hsl(var(--border))",
+            boxShadow: "0 -2px 20px hsl(0 0% 0% / 0.25), 0 4px 24px hsl(0 0% 0% / 0.2)",
           }}
         >
           {tabs.map((tab) => {
@@ -49,40 +62,32 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
               <button
                 key={tab.id}
                 onClick={() => handleTap(tab)}
-                className="relative flex flex-col items-center justify-center transition-all duration-200 ease-out w-14 py-1.5 gap-0.5 rounded-2xl"
+                className="relative flex flex-col items-center justify-center w-14 py-2 gap-0.5 rounded-2xl transition-all duration-200"
+                style={isActive ? { background: "hsl(var(--primary) / 0.12)" } : {}}
               >
-                {/* Active highlight — pill under icon only, no halo */}
-                {isActive && (
-                  <div
-                    className="absolute inset-0 rounded-2xl"
-                    style={{
-                      background: "hsl(var(--primary) / 0.15)",
-                    }}
-                  />
-                )}
-
-                <div className="relative w-7 h-7 flex items-center justify-center">
+                <div className="relative w-6 h-6 flex items-center justify-center">
                   <Icon
-                    className="relative w-[18px] h-[18px] transition-all duration-200"
-                    style={isActive ? { color: "hsl(var(--primary))", strokeWidth: 2.5 } : { color: "hsl(var(--muted-foreground))" }}
+                    className="w-[18px] h-[18px] transition-all duration-200"
+                    style={isActive
+                      ? { color: "hsl(var(--primary))", strokeWidth: 2.5 }
+                      : { color: "hsl(var(--muted-foreground))", strokeWidth: 1.8 }
+                    }
                   />
-                  {/* Orders badge */}
                   {tab.id === "orders" && activeOrderCount > 0 && (
                     <span
-                      className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] rounded-full text-[9px] font-bold flex items-center justify-center px-0.5 z-20"
-                      style={{
-                        background: "hsl(var(--destructive))",
-                        color: "white",
-                      }}
+                      className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] rounded-full text-[8px] font-bold flex items-center justify-center px-0.5 z-20"
+                      style={{ background: "hsl(var(--destructive))", color: "white" }}
                     >
                       {activeOrderCount > 9 ? "9+" : activeOrderCount}
                     </span>
                   )}
                 </div>
-
                 <span
-                  className="relative text-[9px] font-semibold transition-all duration-200 leading-none"
-                  style={isActive ? { color: "hsl(var(--primary))" } : { color: "hsl(var(--muted-foreground))" }}
+                  className="text-[9px] font-semibold leading-none transition-all duration-200"
+                  style={isActive
+                    ? { color: "hsl(var(--primary))" }
+                    : { color: "hsl(var(--muted-foreground))" }
+                  }
                 >
                   {tab.label}
                 </span>
@@ -91,7 +96,7 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
           })}
         </div>
       </div>
-    </nav>
+    </div>
   );
 };
 
