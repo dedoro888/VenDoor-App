@@ -176,7 +176,7 @@ const SupportPage = () => {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-28 pt-2 flex-shrink-0">
+      <div className="px-4 pb-32 pt-2 flex-shrink-0">
         <div className="flex items-end gap-2 p-2 rounded-2xl bg-card border border-border shadow-sm">
           <textarea
             value={input}

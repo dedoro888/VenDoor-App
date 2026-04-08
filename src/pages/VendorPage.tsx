@@ -51,7 +51,7 @@ const VendorPage = () => {
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-background">
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-24">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
         {/* Hero Banner */}
         <div className="relative h-52">
           <img src={shop.image} alt={shop.name} className="w-full h-full object-cover" />

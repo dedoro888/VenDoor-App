@@ -302,7 +302,7 @@ const OrdersPage = () => {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
       {/* Cart items to checkout */}
       {items.length > 0 && (
         <div className="mx-5 mb-4 p-4 rounded-2xl bg-card border border-border">

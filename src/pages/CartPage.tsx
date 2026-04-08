@@ -65,7 +65,7 @@ const CartPage = () => {
         <h1 className="text-xl font-bold text-foreground">My Cart</h1>
       </div>
 
-      <div className="px-5 space-y-3 pb-44">
+      <div className="px-5 space-y-3 pb-48">
         {items.length === 0 && (
           <div className="text-center py-16">
             <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-3" />

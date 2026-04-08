@@ -48,7 +48,7 @@ const WalletPage = () => {
 
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-background">
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-5 pb-4">
         <button onClick={() => navigate("/profile")} className="p-1">
