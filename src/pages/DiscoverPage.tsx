@@ -42,7 +42,7 @@ const DiscoverPage = () => {
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-background">
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-24">
+      <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
         <div className="px-5 pt-4 pb-2">
           <h1 className="text-xl font-bold text-foreground">Discover</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Trending from vendors near you</p>
