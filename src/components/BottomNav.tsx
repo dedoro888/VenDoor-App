@@ -16,10 +16,9 @@ const tabs = [
   { id: "profile", icon: User, label: "Profile", path: "/profile" },
 ];
 
-const BUBBLE_SIZE = 52;
-const NOTCH_W = 74;
+const BUBBLE_SIZE = 50;
 const SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
-const DURATION = "500ms";
+const DURATION = "450ms";
 
 const BottomNav = ({ active, onSearch }: BottomNavProps) => {
   const navigate = useNavigate();
@@ -74,7 +73,7 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
     >
       <div className="w-full max-w-md px-4 pb-3 pointer-events-auto">
         <div className="relative">
-          {/* ── Floating bubble ── */}
+          {/* ── Floating bubble (no notch, clean circle like reference) ── */}
           {barWidth > 0 && (
             <div
               className="absolute z-10 flex items-center justify-center"
@@ -82,12 +81,12 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
                 width: BUBBLE_SIZE,
                 height: BUBBLE_SIZE,
                 borderRadius: "50%",
-                background: "hsl(var(--foreground))",
-                boxShadow:
-                  "0 4px 16px hsl(var(--foreground) / 0.25), 0 0 0 4px hsl(var(--card))",
-                top: -(BUBBLE_SIZE / 2) + 10,
+                background: "hsl(var(--card))",
+                border: "4px solid hsl(var(--background))",
+                boxShadow: "0 2px 12px hsl(0 0% 0% / 0.15)",
+                top: -(BUBBLE_SIZE / 2) + 6,
                 left: bubbleCenterX - BUBBLE_SIZE / 2,
-                transition: `left ${DURATION} ${SPRING}, top ${DURATION} ${SPRING}`,
+                transition: `left ${DURATION} ${SPRING}`,
                 willChange: "left",
               }}
             >
@@ -97,7 +96,7 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
                   return (
                     <Icon
                       style={{
-                        color: "hsl(var(--background))",
+                        color: "hsl(var(--foreground))",
                         width: 22,
                         height: 22,
                         strokeWidth: 2.2,
@@ -108,38 +107,15 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
             </div>
           )}
 
-          {/* ── Notch cutout ── */}
-          {barWidth > 0 && (
-            <svg
-              className="absolute z-[5] pointer-events-none"
-              style={{
-                top: -13,
-                left: bubbleCenterX - NOTCH_W / 2,
-                transition: `left ${DURATION} ${SPRING}`,
-                willChange: "left",
-              }}
-              width={NOTCH_W}
-              height="24"
-              viewBox="0 0 74 24"
-              fill="none"
-            >
-              <path
-                d="M0 24C8 24 15 22 21 14C27 6 31 0 37 0C43 0 47 6 53 14C59 22 66 24 74 24"
-                fill="hsl(var(--card))"
-              />
-            </svg>
-          )}
-
           {/* ── Bar ── */}
           <div
             ref={barRef}
-            className="relative flex items-center justify-around rounded-[22px] overflow-visible"
+            className="relative flex items-center justify-around rounded-full overflow-visible"
             style={{
               background: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border) / 0.35)",
-              boxShadow:
-                "0 -2px 20px hsl(0 0% 0% / 0.08), 0 8px 32px hsl(0 0% 0% / 0.18)",
-              padding: "10px 0 10px",
+              border: "1px solid hsl(var(--border) / 0.2)",
+              boxShadow: "0 4px 24px hsl(0 0% 0% / 0.12)",
+              padding: "8px 0 10px",
             }}
           >
             {tabs.map((tab, index) => {
@@ -150,18 +126,18 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
                 <button
                   key={tab.id}
                   onClick={() => handleTap(tab)}
-                  className="relative flex flex-col items-center justify-center gap-[5px] flex-1"
-                  style={{ height: 42 }}
+                  className="relative flex flex-col items-center justify-center gap-[3px] flex-1"
+                  style={{ height: 40 }}
                 >
-                  {/* Icon — fades when active */}
+                  {/* Icon — hidden when active (shown in bubble) */}
                   <div
-                    className="relative flex items-center justify-center w-6 h-6"
+                    className="relative flex items-center justify-center w-5 h-5"
                     style={{
-                      opacity: isActive ? 0 : 0.7,
+                      opacity: isActive ? 0 : 0.6,
                       transform: isActive
-                        ? "scale(0.5) translateY(-6px)"
+                        ? "scale(0.4) translateY(-8px)"
                         : "scale(1) translateY(0)",
-                      transition: `opacity 300ms ease, transform 350ms ${SPRING}`,
+                      transition: `opacity 250ms ease, transform 300ms ${SPRING}`,
                     }}
                   >
                     <Icon
@@ -185,17 +161,17 @@ const BottomNav = ({ active, onSearch }: BottomNavProps) => {
                     )}
                   </div>
 
-                  {/* Label */}
+                  {/* Label — bold when active */}
                   <span
-                    className="text-[10px] font-semibold leading-none"
+                    className="text-[10px] leading-none"
                     style={{
                       color: isActive
                         ? "hsl(var(--foreground))"
                         : "hsl(var(--muted-foreground))",
-                      opacity: isActive ? 1 : 0.55,
+                      opacity: isActive ? 1 : 0.5,
                       fontWeight: isActive ? 700 : 500,
-                      transform: isActive ? "translateY(7px)" : "translateY(0)",
-                      transition: `all 350ms ${SPRING}`,
+                      transform: isActive ? "translateY(8px)" : "translateY(0)",
+                      transition: `all 300ms ${SPRING}`,
                     }}
                   >
                     {tab.label}
