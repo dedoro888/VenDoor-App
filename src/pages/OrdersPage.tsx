@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Package, Bike, CheckCircle2, X, Tag, Download, Eye, CreditCard, Clock, MapPin, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { ArrowLeft, Package, Bike, CheckCircle2, X, Tag, Download, Eye, CreditCard, Clock, MapPin, ChevronDown, ChevronUp, RefreshCw, Star } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart, Order } from "@/contexts/CartContext";
 import { foodItems } from "@/data/mockData";
 import BottomNav from "@/components/BottomNav";
+import RatingCard from "@/components/RatingCard";
 
 const stages = [
   { icon: Package, label: "Confirmed", color: "text-vendoor-amber" },
@@ -74,13 +75,22 @@ const CheckoutModal = ({ order, onClose, onPay }: CheckoutModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md bg-card rounded-t-3xl p-5 pb-8 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl p-5 pb-8 slide-up-from-nav" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-bold text-foreground mb-4">Confirm & Pay</h3>
         <div className="space-y-2 mb-4">
           {order.items.map((item) => (
-            <div key={item.food.id} className="flex items-center justify-between text-sm">
-              <span className="text-foreground">{item.quantity}x {item.food.name}</span>
-              <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+            <div key={item.food.id}>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-foreground">{item.quantity}x {item.food.name}</span>
+                <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+              </div>
+              {/* Show addons in breakdown */}
+              {item.addons && item.addons.length > 0 && item.addons.map((a) => (
+                <div key={a.addon.id} className="flex items-center justify-between text-xs ml-4">
+                  <span className="text-muted-foreground">+ {a.addon.name} (x{a.quantity})</span>
+                  <span className="text-muted-foreground">₦{(a.addon.price * a.quantity * item.quantity).toLocaleString()}</span>
+                </div>
+              ))}
             </div>
           ))}
           {order.promoCode && (
@@ -123,16 +133,16 @@ interface OrderCardProps {
   isLateCancel: (o: Order) => boolean;
   onCancel: (id: string) => void;
   onReorder: (o: Order) => void;
+  onRate: (o: Order) => void;
   isPast?: boolean;
 }
 
-const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, isPast }: OrderCardProps) => {
+const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, onRate, isPast }: OrderCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
 
   return (
     <div className="rounded-2xl bg-card border border-border overflow-hidden">
-      {/* Tap header to expand */}
       <button
         className="w-full flex items-center justify-between p-4 text-left"
         onClick={() => setExpanded((v) => !v)}
@@ -150,12 +160,20 @@ const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, isPast
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
-          {/* Items */}
+          {/* Items with addons breakdown */}
           <div className="space-y-1.5">
             {order.items.map((item) => (
-              <div key={item.food.id} className="flex items-center justify-between text-xs">
-                <span className="text-foreground">{item.quantity}x {item.food.name}</span>
-                <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+              <div key={item.food.id}>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground">{item.quantity}x {item.food.name}</span>
+                  <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+                </div>
+                {item.addons && item.addons.map((a) => (
+                  <div key={a.addon.id} className="flex items-center justify-between text-[11px] ml-3">
+                    <span className="text-muted-foreground">+ {a.addon.name} x{a.quantity}</span>
+                    <span className="text-muted-foreground">₦{(a.addon.price * a.quantity * item.quantity).toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -176,10 +194,24 @@ const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, isPast
             </div>
           )}
 
-          {/* Special Instructions */}
           {order.note && (
             <div className="px-3 py-2 rounded-xl bg-secondary text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">📝 Special Instructions:</span> {order.note}
+              <span className="font-medium text-foreground">Special Instructions:</span> {order.note}
+            </div>
+          )}
+
+          {/* Rating display */}
+          {order.rating && (
+            <div className="px-3 py-2 rounded-xl text-xs" style={{ background: "hsl(var(--vendoor-amber) / 0.1)" }}>
+              <div className="flex items-center gap-1 mb-1">
+                <span className="font-medium text-foreground">Your Rating:</span>
+                {[...Array(order.rating.vendorStars)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3" style={{ fill: "hsl(var(--vendoor-amber))", color: "hsl(var(--vendoor-amber))" }} />
+                ))}
+              </div>
+              {order.rating.review && (
+                <p className="text-muted-foreground italic">"{order.rating.review}"</p>
+              )}
             </div>
           )}
 
@@ -228,7 +260,18 @@ const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, isPast
             ) : null
           )}
 
-          {/* Reorder on past successful orders */}
+          {/* Rate button for delivered unrated orders */}
+          {order.stage === 3 && !order.cancelled && !order.rating && (
+            <button
+              onClick={() => onRate(order)}
+              className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+              style={{ background: "hsl(var(--vendoor-amber) / 0.15)", color: "hsl(var(--vendoor-amber))" }}
+            >
+              <Star className="w-3.5 h-3.5" /> Rate This Order
+            </button>
+          )}
+
+          {/* Reorder */}
           {isPast && order.stage === 3 && !order.cancelled && (
             <button
               onClick={() => onReorder(order)}
@@ -247,9 +290,10 @@ const OrderCard = ({ order, canCancel, isLateCancel, onCancel, onReorder, isPast
 const OrdersPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { orders, cancelOrder, confirmPayment, placeOrder, items, cartTotal, addToCart } = useCart();
+  const { orders, cancelOrder, confirmPayment, placeOrder, items, cartTotal, addToCart, rateOrder } = useCart();
   const [checkoutOrder, setCheckoutOrder] = useState<Order | null>(null);
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
+  const [ratingOrder, setRatingOrder] = useState<Order | null>(null);
   const [activeTab, setActiveTab] = useState<"current" | "past">(
     searchParams.get("tab") === "past" ? "past" : "current"
   );
@@ -279,10 +323,14 @@ const OrdersPage = () => {
   const handleReorder = (order: Order) => {
     order.items.forEach((item) => {
       const food = foodItems.find((f) => f.id === item.food.id);
-      if (food) addToCart(food, item.quantity, item.deliveryType, item.note, undefined, item.promoCode, item.promoDiscount);
+      if (food) addToCart(food, item.quantity, item.deliveryType, item.note, undefined, item.promoCode, item.promoDiscount, item.addons);
     });
     navigate("/orders");
     setActiveTab("current");
+  };
+
+  const handleRate = (order: Order) => {
+    setRatingOrder(order);
   };
 
   const currentOrders = orders.filter((o) => !o.cancelled && o.stage < 3 && o.paymentStatus === "paid");
@@ -291,7 +339,6 @@ const OrdersPage = () => {
 
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-background">
-      {/* Fixed top header */}
       <div className="flex-shrink-0 px-5 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate("/")} className="p-1">
@@ -301,95 +348,108 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
-      {/* Cart items to checkout */}
-      {items.length > 0 && (
-        <div className="mx-5 mb-4 p-4 rounded-2xl bg-card border border-border">
-          <p className="text-sm font-bold text-foreground mb-3">Items ready to order ({items.length})</p>
-          {items.map((item) => (
-            <div key={item.food.id} className="flex justify-between text-sm mb-1">
-              <span className="text-foreground">{item.quantity}x {item.food.name}</span>
-              <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+        {items.length > 0 && (
+          <div className="mx-5 mb-4 p-4 rounded-2xl bg-card border border-border">
+            <p className="text-sm font-bold text-foreground mb-3">Items ready to order ({items.length})</p>
+            {items.map((item) => (
+              <div key={item.food.id}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-foreground">{item.quantity}x {item.food.name}</span>
+                  <span className="font-medium text-foreground">₦{(item.food.price * item.quantity).toLocaleString()}</span>
+                </div>
+                {item.addons && item.addons.map((a) => (
+                  <div key={a.addon.id} className="flex justify-between text-xs ml-3 mb-0.5">
+                    <span className="text-muted-foreground">+ {a.addon.name} x{a.quantity}</span>
+                    <span className="text-muted-foreground">₦{(a.addon.price * a.quantity).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+            <div className="border-t border-border mt-2 pt-2 flex justify-between items-center">
+              <span className="font-bold text-foreground">Total: ₦{cartTotal.toLocaleString()}</span>
+              <button
+                onClick={handleCheckout}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-primary-foreground"
+                style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
+              >
+                Checkout
+              </button>
             </div>
+          </div>
+        )}
+
+        {pendingOrders.map((order) => (
+          <div key={order.id} className="mx-5 mb-3 p-4 rounded-2xl bg-vendoor-amber/10 border border-vendoor-amber/30">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-bold text-foreground">{order.id}</p>
+                <p className="text-xs text-muted-foreground">Pending Payment</p>
+              </div>
+              <button
+                onClick={() => setCheckoutOrder(order)}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-primary-foreground"
+                style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
+              >
+                Pay Now
+              </button>
+            </div>
+          </div>
+        ))}
+
+        <div className="flex gap-2 px-5 mb-4">
+          {(["current", "past"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+              }`}
+            >
+              {tab === "current" ? `Current${currentOrders.length > 0 ? ` (${currentOrders.length})` : ""}` : "History"}
+            </button>
           ))}
-          <div className="border-t border-border mt-2 pt-2 flex justify-between items-center">
-            <span className="font-bold text-foreground">Total: ₦{cartTotal.toLocaleString()}</span>
-            <button
-              onClick={handleCheckout}
-              className="px-4 py-2 rounded-xl text-sm font-bold text-primary-foreground"
-              style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
-            >
-              Checkout
-            </button>
-          </div>
         </div>
-      )}
 
-      {/* Pending payment orders */}
-      {pendingOrders.map((order) => (
-        <div key={order.id} className="mx-5 mb-3 p-4 rounded-2xl bg-vendoor-amber/10 border border-vendoor-amber/30">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm font-bold text-foreground">{order.id}</p>
-              <p className="text-xs text-muted-foreground">Pending Payment</p>
+        <div className="px-5 space-y-3">
+          {activeTab === "current" && currentOrders.length === 0 && (
+            <div className="text-center py-16">
+              <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No active orders</p>
             </div>
-            <button
-              onClick={() => setCheckoutOrder(order)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-primary-foreground"
-              style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--vendoor-amber)))" }}
-            >
-              Pay Now
-            </button>
-          </div>
+          )}
+          {activeTab === "past" && pastOrders.length === 0 && (
+            <div className="text-center py-16">
+              <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No past orders yet</p>
+            </div>
+          )}
+
+          {(activeTab === "current" ? currentOrders : pastOrders).map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              canCancel={canCancel}
+              isLateCancel={isLateCancel}
+              onCancel={cancelOrder}
+              onReorder={handleReorder}
+              onRate={handleRate}
+              isPast={activeTab === "past"}
+            />
+          ))}
         </div>
-      ))}
-
-      {/* Tabs */}
-      <div className="flex gap-2 px-5 mb-4">
-        {(["current", "past"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              activeTab === tab ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-            }`}
-          >
-            {tab === "current" ? `Current${currentOrders.length > 0 ? ` (${currentOrders.length})` : ""}` : "History"}
-          </button>
-        ))}
       </div>
-
-      <div className="px-5 space-y-3">
-        {activeTab === "current" && currentOrders.length === 0 && (
-          <div className="text-center py-16">
-            <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No active orders</p>
-          </div>
-        )}
-        {activeTab === "past" && pastOrders.length === 0 && (
-          <div className="text-center py-16">
-            <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No past orders yet</p>
-          </div>
-        )}
-
-        {(activeTab === "current" ? currentOrders : pastOrders).map((order) => (
-          <OrderCard
-            key={order.id}
-            order={order}
-            canCancel={canCancel}
-            isLateCancel={isLateCancel}
-            onCancel={cancelOrder}
-            onReorder={handleReorder}
-            isPast={activeTab === "past"}
-          />
-        ))}
-      </div>
-      </div>{/* end scrollable */}
 
       {checkoutOrder && <CheckoutModal order={checkoutOrder} onClose={() => setCheckoutOrder(null)} onPay={handlePay} />}
       {receiptOrder && <ReceiptModal order={receiptOrder} onClose={() => setReceiptOrder(null)} />}
+      {ratingOrder && (
+        <RatingCard
+          orderId={ratingOrder.id}
+          vendorName={ratingOrder.vendorName}
+          onSubmit={(id, rating) => { rateOrder(id, rating); setRatingOrder(null); }}
+          onSkip={() => setRatingOrder(null)}
+        />
+      )}
 
       <BottomNav active="orders" />
     </div>
