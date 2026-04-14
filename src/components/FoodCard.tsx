@@ -1,7 +1,7 @@
 import { FoodItem, shops } from "@/data/mockData";
 import { useFavourites } from "@/contexts/FavouritesContext";
 import { useState } from "react";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, Flame } from "lucide-react";
 
 const FourPointStar = ({ filled, className, onClick }: { filled: boolean; className?: string; onClick?: (e: React.MouseEvent) => void }) => (
   <svg
@@ -34,6 +34,7 @@ const FoodCard = ({ food, onTap }: FoodCardProps) => {
   };
 
   const isFav = isFoodFav(food.id);
+  const hasDiscount = !!food.originalPrice && food.originalPrice > food.price;
 
   return (
     <button
@@ -57,13 +58,22 @@ const FoodCard = ({ food, onTap }: FoodCardProps) => {
           </div>
         )}
 
-        {/* Price badge */}
-        <span
-          className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{ background: "hsl(var(--primary))", color: "white" }}
-        >
-          ₦{food.price.toLocaleString()}
-        </span>
+        {/* Discount tag */}
+        {hasDiscount && food.discount ? (
+          <span
+            className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{ background: "hsl(var(--destructive))", color: "white" }}
+          >
+            -{food.discount}% OFF
+          </span>
+        ) : (
+          <span
+            className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full"
+            style={{ background: "hsl(var(--primary))", color: "white" }}
+          >
+            ₦{food.price.toLocaleString()}
+          </span>
+        )}
 
         {/* Fav button */}
         <button
@@ -93,12 +103,41 @@ const FoodCard = ({ food, onTap }: FoodCardProps) => {
       <div className="mt-2 px-0.5">
         <h3 className="text-sm font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{food.name}</h3>
         <p className="text-xs truncate" style={{ color: "hsl(var(--muted-foreground))" }}>{food.shopName}</p>
-        {shop && (
-          <div className="flex items-center gap-1 mt-0.5">
-            <Star className="w-3 h-3" style={{ fill: "hsl(var(--vendoor-amber))", color: "hsl(var(--vendoor-amber))" }} />
-            <span className="text-xs font-medium" style={{ color: "hsl(var(--foreground))" }}>{shop.rating}</span>
-          </div>
-        )}
+
+        {/* Price row with discount */}
+        <div className="flex items-center gap-1.5 mt-0.5">
+          {hasDiscount ? (
+            <>
+              <span className="text-xs font-bold" style={{ color: "hsl(var(--primary))" }}>
+                ₦{food.price.toLocaleString()}
+              </span>
+              <span
+                className="text-[10px] line-through"
+                style={{ color: "hsl(var(--muted-foreground))", opacity: 0.6 }}
+              >
+                ₦{food.originalPrice!.toLocaleString()}
+              </span>
+            </>
+          ) : null}
+        </div>
+
+        {/* Rating + order count */}
+        <div className="flex items-center gap-2 mt-0.5">
+          {shop && (
+            <div className="flex items-center gap-0.5">
+              <Star className="w-3 h-3" style={{ fill: "hsl(var(--vendoor-amber))", color: "hsl(var(--vendoor-amber))" }} />
+              <span className="text-xs font-medium" style={{ color: "hsl(var(--foreground))" }}>{shop.rating}</span>
+            </div>
+          )}
+          {food.orderCount && food.orderCount > 50 && (
+            <div className="flex items-center gap-0.5">
+              <Flame className="w-3 h-3" style={{ color: "hsl(var(--vendoor-orange))" }} />
+              <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                {food.orderCount}+ orders
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </button>
   );
