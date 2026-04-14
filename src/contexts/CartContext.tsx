@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { FoodItem } from "@/data/mockData";
+import { FoodItem, Addon } from "@/data/mockData";
+
+export interface CartAddon {
+  addon: Addon;
+  quantity: number;
+}
 
 export interface CartItem {
   food: FoodItem;
@@ -9,9 +14,18 @@ export interface CartItem {
   scheduledFor?: string;
   promoCode?: string;
   promoDiscount?: number;
+  addons?: CartAddon[];
 }
 
 export type OrderStage = 1 | 2 | 3;
+
+export interface OrderRating {
+  vendorStars: number;
+  vendorTags?: string[];
+  riderStars: number;
+  riderTags?: string[];
+  review?: string;
+}
 
 export interface Order {
   id: string;
@@ -27,12 +41,13 @@ export interface Order {
   promoDiscount?: number;
   deliveryType: "pickup" | "delivery";
   paymentStatus: "pending" | "paid" | "failed";
+  rating?: OrderRating;
 }
 
 interface CartContextType {
   items: CartItem[];
   orders: Order[];
-  addToCart: (food: FoodItem, quantity: number, deliveryType: "pickup" | "delivery", note?: string, scheduledFor?: string, promoCode?: string, promoDiscount?: number) => void;
+  addToCart: (food: FoodItem, quantity: number, deliveryType: "pickup" | "delivery", note?: string, scheduledFor?: string, promoCode?: string, promoDiscount?: number, addons?: CartAddon[]) => void;
   removeFromCart: (foodId: string) => void;
   updateQuantity: (foodId: string, quantity: number) => void;
   clearCart: () => void;
@@ -41,6 +56,7 @@ interface CartContextType {
   confirmPayment: (orderId: string) => void;
   cancelOrder: (orderId: string) => void;
   advanceOrderStage: (orderId: string) => void;
+  rateOrder: (orderId: string, rating: OrderRating) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -56,16 +72,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     note?: string,
     scheduledFor?: string,
     promoCode?: string,
-    promoDiscount?: number
+    promoDiscount?: number,
+    addons?: CartAddon[]
   ) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.food.id === food.id);
       if (existing) {
         return prev.map((i) =>
-          i.food.id === food.id ? { ...i, quantity: i.quantity + quantity, deliveryType, note, scheduledFor, promoCode, promoDiscount } : i
+          i.food.id === food.id ? { ...i, quantity: i.quantity + quantity, deliveryType, note, scheduledFor, promoCode, promoDiscount, addons } : i
         );
       }
-      return [...prev, { food, quantity, deliveryType, note, scheduledFor, promoCode, promoDiscount }];
+      return [...prev, { food, quantity, deliveryType, note, scheduledFor, promoCode, promoDiscount, addons }];
     });
   };
 
@@ -82,8 +99,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const cartTotal = items.reduce((sum, i) => {
     const base = i.food.price * i.quantity;
-    const discount = i.promoDiscount ? base * (i.promoDiscount / 100) : 0;
-    return sum + base - discount;
+    const addonTotal = (i.addons || []).reduce((a, ad) => a + ad.addon.price * ad.quantity, 0) * i.quantity;
+    const subtotal = base + addonTotal;
+    const discount = i.promoDiscount ? subtotal * (i.promoDiscount / 100) : 0;
+    return sum + subtotal - discount;
   }, 0);
 
   const placeOrder = (
@@ -116,7 +135,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setOrders((prev) =>
       prev.map((o) => o.id === orderId ? { ...o, paymentStatus: "paid" } : o)
     );
-    // Simulate order progression
     setTimeout(() => {
       setOrders((prev) => prev.map((o) => o.id === orderId && o.paymentStatus === "paid" ? { ...o, stage: 1 } : o));
     }, 500);
@@ -143,8 +161,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const rateOrder = (orderId: string, rating: OrderRating) => {
+    setOrders((prev) =>
+      prev.map((o) => o.id === orderId ? { ...o, rating } : o)
+    );
+  };
+
   return (
-    <CartContext.Provider value={{ items, orders, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, placeOrder, confirmPayment, cancelOrder, advanceOrderStage }}>
+    <CartContext.Provider value={{ items, orders, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, placeOrder, confirmPayment, cancelOrder, advanceOrderStage, rateOrder }}>
       {children}
     </CartContext.Provider>
   );
