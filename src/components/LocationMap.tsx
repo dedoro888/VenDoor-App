@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ArrowLeft, Navigation, Search, Loader2, MapPin } from "lucide-react";
@@ -35,7 +34,7 @@ const reverseGeocode = async (lat: number, lng: number): Promise<{ display: stri
   }
 };
 
-/* ── forward search helper (debounced Nominatim) ── */
+/* ── forward search helper ── */
 interface SearchResult {
   place_id: number;
   display_name: string;
@@ -51,44 +50,6 @@ const searchPlaces = async (q: string): Promise<SearchResult[]> => {
   return res.json();
 };
 
-/* ── Map center tracker ── */
-const MapCenterTracker = ({
-  onMove,
-  markerRef,
-}: {
-  onMove: (lat: number, lng: number) => void;
-  markerRef: React.MutableRefObject<L.Marker | null>;
-}) => {
-  const map = useMap();
-
-  useMapEvents({
-    moveend: () => {
-      const c = map.getCenter();
-      onMove(c.lat, c.lng);
-      if (markerRef.current) {
-        markerRef.current.setLatLng(c);
-      }
-    },
-  });
-
-  useEffect(() => {
-    if (!markerRef.current) {
-      markerRef.current = L.marker(map.getCenter(), { icon: pinIcon }).addTo(map);
-    }
-  }, [map, markerRef]);
-
-  return null;
-};
-
-/* ── Fly-to helper ── */
-const FlyTo = ({ center }: { center: [number, number] | null }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (center) map.flyTo(center, 16, { duration: 1 });
-  }, [center, map]);
-  return null;
-};
-
 /* ── Main component ── */
 interface LocationMapProps {
   onClose: () => void;
@@ -99,40 +60,64 @@ const LocationMap = ({ onClose, onConfirm }: LocationMapProps) => {
   const { coordinates } = useLocation();
   const defaultCenter: [number, number] = coordinates
     ? [coordinates.lat, coordinates.lng]
-    : [9.0579, 7.4951]; // Abuja fallback
+    : [9.0579, 7.4951];
+
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
   const [address, setAddress] = useState({ display: "Move map to select", sub: "" });
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
-  const [flyTarget, setFlyTarget] = useState<[number, number] | null>(null);
   const [currentCoords, setCurrentCoords] = useState({ lat: defaultCenter[0], lng: defaultCenter[1] });
   const [detectingGPS, setDetectingGPS] = useState(false);
 
-  const markerRef = useRef<L.Marker | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  /* reverse geocode on map move */
-  const handleMove = useCallback((lat: number, lng: number) => {
-    setCurrentCoords({ lat, lng });
-    setLoading(true);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      const result = await reverseGeocode(lat, lng);
-      setAddress(result);
-      setLoading(false);
-    }, 400);
+  /* Initialize map */
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const map = L.map(mapContainerRef.current, {
+      center: defaultCenter,
+      zoom: 15,
+      zoomControl: false,
+      attributionControl: false,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+    const marker = L.marker(defaultCenter, { icon: pinIcon }).addTo(map);
+    markerRef.current = marker;
+    mapRef.current = map;
+
+    map.on("moveend", () => {
+      const c = map.getCenter();
+      marker.setLatLng(c);
+      setCurrentCoords({ lat: c.lat, lng: c.lng });
+      setLoading(true);
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(async () => {
+        const result = await reverseGeocode(c.lat, c.lng);
+        setAddress(result);
+        setLoading(false);
+      }, 400);
+    });
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
   }, []);
 
   /* search input */
   const handleSearch = useCallback((val: string) => {
     setSearch(val);
     clearTimeout(debounceRef.current);
-    if (val.length < 3) {
-      setResults([]);
-      return;
-    }
+    if (val.length < 3) { setResults([]); return; }
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       const r = await searchPlaces(val);
@@ -144,7 +129,7 @@ const LocationMap = ({ onClose, onConfirm }: LocationMapProps) => {
   const selectResult = (r: SearchResult) => {
     const lat = parseFloat(r.lat);
     const lng = parseFloat(r.lon);
-    setFlyTarget([lat, lng]);
+    mapRef.current?.flyTo([lat, lng], 16, { duration: 1 });
     setSearch("");
     setResults([]);
   };
@@ -157,7 +142,7 @@ const LocationMap = ({ onClose, onConfirm }: LocationMapProps) => {
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
       );
-      setFlyTarget([pos.coords.latitude, pos.coords.longitude]);
+      mapRef.current?.flyTo([pos.coords.latitude, pos.coords.longitude], 16, { duration: 1 });
     } catch {
       // silently fail
     } finally {
@@ -188,7 +173,6 @@ const LocationMap = ({ onClose, onConfirm }: LocationMapProps) => {
           {searching && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
         </div>
 
-        {/* Search results dropdown */}
         {results.length > 0 && (
           <div className="absolute left-4 right-4 mt-1 bg-card rounded-xl shadow-lg border border-border overflow-hidden max-h-52 overflow-y-auto">
             {results.map((r) => (
@@ -207,17 +191,7 @@ const LocationMap = ({ onClose, onConfirm }: LocationMapProps) => {
 
       {/* Map */}
       <div className="flex-1 relative">
-        <MapContainer
-          center={defaultCenter}
-          zoom={15}
-          className="w-full h-full"
-          zoomControl={false}
-          attributionControl={false}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapCenterTracker onMove={handleMove} markerRef={markerRef} />
-          <FlyTo center={flyTarget} />
-        </MapContainer>
+        <div ref={mapContainerRef} className="w-full h-full" />
 
         {/* GPS button */}
         <button

@@ -6,6 +6,7 @@ import { useFavourites } from "@/contexts/FavouritesContext";
 import { toast } from "@/hooks/use-toast";
 import BottomNav from "@/components/BottomNav";
 import FoodItemModal from "@/components/FoodItemModal";
+import VendorReviews from "@/components/VendorReviews";
 
 const FourPointStar = ({ filled, className }: { filled: boolean; className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
@@ -204,10 +205,13 @@ const VendorPage = () => {
               </button>
             );
           })}
-          {filteredFoods.length === 0 && (
+        {filteredFoods.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-8">No items in this category</p>
           )}
         </div>
+
+        {/* Ratings & Reviews */}
+        <VendorReviews rating={shop.rating} reviewCount={shop.reviews} />
       </div>
 
       <FoodItemModal food={selectedFood} onClose={() => setSelectedFood(null)} />
